@@ -2,7 +2,7 @@ mod algoritms;
 
 use std::result;
 
-use algoritms::binary_search::binary_search;
+use algoritms::search::binary_search;
 
 fn main() {
     println!("Hello, world!");
