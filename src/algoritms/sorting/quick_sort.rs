@@ -22,16 +22,51 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_quicksort_positive_number() {
+    fn test_quicksort_positive_numbers() {
         let list = vec![2, 4, 1, 3, 5];
         let result = quick_sort(&list);
         assert_eq!(result, [1, 2, 3, 4, 5])
     }
 
     #[test]
-    fn test_quicksort_positive_number_duplicates() {
-        let list = vec![2, 4, 1, 3, 5, 3];
+    fn test_quicksort_negative_numbers() {
+        let list = vec![-2, -4, -1, -3, -5];
         let result = quick_sort(&list);
-        assert_eq!(result, [1, 2, 3, 3, 4, 5])
+        assert_eq!(result, [-5, -4, -3, -2, -1])
+    }
+
+    #[test]
+    fn test_quicksort_mixed_numbers() {
+        let list = vec![4, 1, -2, -4, 3, -1, 2, -3, -5, 5, 0];
+        let result = quick_sort(&list);
+        assert_eq!(result, [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+    }
+
+    #[test]
+    fn test_quicksort_with_duplicates() {
+        let list = vec![3, 1, 3, 2, 3];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2, 3, 3, 3]);
+    }
+
+    #[test]
+    fn test_quicksort_all_same() {
+        let list = vec![5, 5, 5, 5];
+        let result = quick_sort(&list);
+        assert_eq!(result, [5, 5, 5, 5]);
+    }
+
+    #[test]
+    fn test_quicksort_empty() {
+        let list: Vec<i32> = vec![];
+        let result = quick_sort(&list);
+        assert_eq!(result, []);
+    }
+
+    #[test]
+    fn test_quicksort_already_sorted() {
+        let list = vec![1, 2, 3, 4, 5];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2, 3, 4, 5]);
     }
 }
