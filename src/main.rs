@@ -13,5 +13,5 @@ fn main() {
 
     let result = quick_sort(&numbers);
 
-    println!("result: {:?}", result)
+    println!("result: {:?}", result);
 }
