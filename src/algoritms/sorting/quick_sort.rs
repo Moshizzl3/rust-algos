@@ -13,3 +13,14 @@ pub fn quick_sort(input_list: &[i32]) -> Vec<i32> {
         .collect()
 }
 
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_quicksort_positive_number() {
+        let list = vec![2, 4, 1, 3, 5];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2, 3, 4, 5])
+    }
+    
+}
