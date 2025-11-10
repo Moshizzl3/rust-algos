@@ -76,5 +76,74 @@ mod test {
         let result = quick_sort(&list);
         assert_eq!(result, [1, 2, 3, 4, 5]);
     }
-    
+    #[test]
+    fn test_quicksort_single_element() {
+        let list = vec![42];
+        let result = quick_sort(&list);
+        assert_eq!(result, [42]);
+    }
+
+    #[test]
+    fn test_quicksort_two_elements_sorted() {
+        let list = vec![1, 2];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2]);
+    }
+
+    #[test]
+    fn test_quicksort_two_elements_unsorted() {
+        let list = vec![2, 1];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2]);
+    }
+
+    #[test]
+    fn test_quicksort_reverse_sorted() {
+        let list = vec![5, 4, 3, 2, 1];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_quicksort_many_duplicates() {
+        let list = vec![1, 5, 3, 5, 2, 5, 4, 5, 5];
+        let result = quick_sort(&list);
+        assert_eq!(result, [1, 2, 3, 4, 5, 5, 5, 5, 5]);
+    }
+
+    #[test]
+    fn test_quicksort_with_zeros() {
+        let list = vec![0, -1, 0, 1, 0];
+        let result = quick_sort(&list);
+        assert_eq!(result, [-1, 0, 0, 0, 1]);
+    }
+
+    #[test]
+    fn test_quicksort_large_range() {
+        let list = vec![100, -100, 50, -50, 0];
+        let result = quick_sort(&list);
+        assert_eq!(result, [-100, -50, 0, 50, 100]);
+    }
+
+    // testing that generics work with other types
+    #[test]
+    fn test_quicksort_strings() {
+        let list = vec!["dog", "cat", "zebra", "ant", "bear"];
+        let result = quick_sort(&list);
+        assert_eq!(result, ["ant", "bear", "cat", "dog", "zebra"]);
+    }
+
+    #[test]
+    fn test_quicksort_chars() {
+        let list = vec!['z', 'a', 'm', 'b', 'y'];
+        let result = quick_sort(&list);
+        assert_eq!(result, ['a', 'b', 'm', 'y', 'z']);
+    }
+
+    #[test]
+    fn test_quicksort_larger_list() {
+        let list = vec![9, 7, 5, 11, 12, 2, 14, 3, 10, 6];
+        let result = quick_sort(&list);
+        assert_eq!(result, [2, 3, 5, 6, 7, 9, 10, 11, 12, 14]);
+    }
 }
