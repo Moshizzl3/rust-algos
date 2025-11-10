@@ -1,15 +1,22 @@
+use std::cmp::Ordering;
+
 pub fn quick_sort(input_list: &[i32]) -> Vec<i32> {
     if input_list.len() < 2 {
         return input_list.to_vec();
     }
+
+    let (mut less, mut greater, mut equal) = (Vec::new(), Vec::new(), Vec::new());
+
     let pivot = input_list[input_list.len() / 2];
-    let less: Vec<i32> = input_list.iter().filter(|&&x| x < pivot).copied().collect();
-    let greater: Vec<i32> = input_list.iter().filter(|x| **x > pivot).copied().collect();
-    let equal: Vec<i32> = input_list
+
+    input_list
         .iter()
-        .filter(|&&x| x == pivot)
         .copied()
-        .collect();
+        .for_each(|x| match x.cmp(&pivot) {
+            Ordering::Less => less.push(x),
+            Ordering::Greater => greater.push(x),
+            Ordering::Equal => equal.push(x),
+        });
 
     quick_sort(&less)
         .into_iter()
