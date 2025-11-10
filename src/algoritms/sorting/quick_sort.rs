@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-pub fn quick_sort(input_list: &[i32]) -> Vec<i32> {
+pub fn quick_sort<T: Clone + Copy + Ord>(input_list: &[T]) -> Vec<T> {
     if input_list.len() < 2 {
         return input_list.to_vec();
     }
@@ -76,4 +76,5 @@ mod test {
         let result = quick_sort(&list);
         assert_eq!(result, [1, 2, 3, 4, 5]);
     }
+    
 }
