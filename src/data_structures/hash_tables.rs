@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::str::Chars;
 
+#[derive(Debug)]
 pub enum MoMapError {
     CreationError,
 }
@@ -9,7 +10,7 @@ pub struct MoMap<V> {
     buckets: Vec<Vec<(String, V)>>,
 }
 
-impl<V: Clone + Debug> MoMap<V> {
+impl<V: Clone + Copy + Debug> MoMap<V> {
     pub fn new() -> Self {
         let buckets = vec![Vec::new(); 8];
         MoMap {
@@ -29,6 +30,14 @@ impl<V: Clone + Debug> MoMap<V> {
         self.buckets[index].push((key, value));
         self.bucket_item_count += 1;
         Ok(())
+    }
+
+    pub fn get(&self, key: &str) -> Option<&V> {
+        let index: usize = self.hashing_function(key.chars());
+        self.buckets[index]
+            .iter()
+            .find(|x| x.0 == key)
+            .map(|x| &x.1)
     }
 
     fn hashing_function(&self, chars: Chars) -> usize {
