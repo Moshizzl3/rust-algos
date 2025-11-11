@@ -8,25 +8,16 @@ use algoritms::search::binary_search;
 use algoritms::sorting::quick_sort::quick_sort;
 
 use crate::algoritms::sorting::bubble_sort::bubble_sort;
+use crate::data_structures::hash_tables::MoMap;
 
 fn main() {
-    for size in [100, 500, 1000, 2000, 5000] {
-        let list: Vec<i32> = (0..size).rev().collect();
+    let mut my_map: MoMap<u32> = MoMap::new();
 
-        let start = std::time::Instant::now();
-        let _ = quick_sort(&list);
-        let quick_time = start.elapsed();
-
-        let start = std::time::Instant::now();
-        let _ = bubble_sort(&list);
-        let bubble_time = start.elapsed();
-
-        println!(
-            "n={}: Quick={:?}, Bubble={:?}, Ratio={:.1}x",
-            size,
-            quick_time,
-            bubble_time,
-            bubble_time.as_micros() as f64 / quick_time.as_micros() as f64
-        );
-    }
+    my_map.bla();
+    
+    my_map.insert("hello".to_string(), 32);
+    my_map.insert("hello1".to_string(), 32);
+    my_map.insert("aaaa".to_string(), 32);
+    my_map.insert("mohamad".to_string(), 32);
+    my_map.bla();
 }

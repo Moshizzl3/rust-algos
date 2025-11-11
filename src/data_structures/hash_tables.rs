@@ -1,31 +1,32 @@
+use std::fmt::Debug;
 use std::str::Chars;
 
-#[derive(Clone)]
-struct BucketItem<V> {
-    key: String,
-    value: V,
-}
-
-enum MoMapError {
+pub enum MoMapError {
     CreationError,
 }
-#[derive(Clone)]
-struct MoMap<V> {
+pub struct MoMap<V> {
     bucket_item_count: u32,
-    buckets: Vec<Vec<BucketItem<V>>>,
+    buckets: Vec<Vec<(String, V)>>,
 }
 
-impl<V> MoMap<V> {
+impl<V: Clone + Debug> MoMap<V> {
     pub fn new() -> Self {
+        let buckets = vec![Vec::new(); 8];
         MoMap {
             bucket_item_count: 0,
-            buckets: Vec::with_capacity(8),
+            buckets,
         }
     }
 
-    pub fn insert(&mut self, item: BucketItem<V>) -> Result<(), MoMapError> {
-        let index: usize = self.hashing_function(item.key.chars());
-        self.buckets[index].push(item);
+    pub fn bla(&self) {
+        println!("size of bucket: {}", self.buckets.len());
+        println!("amount of items added: {}", self.bucket_item_count);
+        println!("amount of items added: {:?}", self.buckets);
+    }
+
+    pub fn insert(&mut self, key: String, value: V) -> Result<(), MoMapError> {
+        let index: usize = self.hashing_function(key.chars());
+        self.buckets[index].push((key, value));
         self.bucket_item_count += 1;
         Ok(())
     }
