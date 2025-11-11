@@ -6,12 +6,26 @@ use algoritms::recursive_stuff::{count_recursive, count_recursive_match, sum_rec
 use algoritms::search::binary_search;
 use algoritms::sorting::quick_sort::quick_sort;
 
+use crate::algoritms::sorting::bubble_sort::bubble_sort;
+
 fn main() {
-    println!("Hello, world!");
+    for size in [100, 500, 1000, 2000, 5000] {
+        let list: Vec<i32> = (0..size).rev().collect();
 
-    let numbers: Vec<i32> = vec![2, 4, 3, 5, 1, 8, 7, 9, -1, 0];
+        let start = std::time::Instant::now();
+        let _ = quick_sort(&list);
+        let quick_time = start.elapsed();
 
-    let result = quick_sort(&numbers);
+        let start = std::time::Instant::now();
+        let _ = bubble_sort(&list);
+        let bubble_time = start.elapsed();
 
-    println!("result: {:?}", result);
+        println!(
+            "n={}: Quick={:?}, Bubble={:?}, Ratio={:.1}x",
+            size,
+            quick_time,
+            bubble_time,
+            bubble_time.as_micros() as f64 / quick_time.as_micros() as f64
+        );
+    }
 }
