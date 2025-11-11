@@ -1,4 +1,5 @@
 mod algoritms;
+mod data_structures;
 
 use std::result;
 
