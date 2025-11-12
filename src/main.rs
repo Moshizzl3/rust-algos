@@ -24,5 +24,9 @@ fn main() -> Result<(), MoMapError> {
     let test = my_map.get("mohamad").unwrap();
 
     println!("woow: {}", test);
+    my_map.remove("mohamad")?;
+    let test = my_map.get("mohamad");
+    println!("woow2: {:?}", test);
+    my_map.bla();
     Ok(())
 }

@@ -1,9 +1,12 @@
+use core::error;
+use std::collections::btree_map::Keys;
 use std::fmt::Debug;
 use std::str::Chars;
 
 #[derive(Debug)]
 pub enum MoMapError {
     CreationError,
+    ItemNotFound,
 }
 pub struct MoMap<V> {
     bucket_item_count: u32,
@@ -38,6 +41,19 @@ impl<V: Clone + Copy + Debug> MoMap<V> {
             .iter()
             .find(|x| x.0 == key)
             .map(|x| &x.1)
+    }
+
+    pub fn remove(&mut self, key: &str) -> Result<String, MoMapError> {
+        let index: usize = self.hashing_function(key.chars());
+        let bucket = &mut self.buckets[index];
+
+        match bucket.iter().position(|x| x.0 == key) {
+            Some(v) => {
+                self.bucket_item_count -= 1;
+                Ok(bucket.swap_remove(v).0)
+            }
+            None => Err(MoMapError::ItemNotFound),
+        }
     }
 
     fn hashing_function(&self, chars: Chars) -> usize {
