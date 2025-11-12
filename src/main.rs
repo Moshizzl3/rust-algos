@@ -1,14 +1,6 @@
 mod algoritms;
 mod data_structures;
 
-use std::error::Error;
-use std::result;
-
-use algoritms::recursive_stuff::{count_recursive, count_recursive_match, sum_recursive};
-use algoritms::search::binary_search;
-use algoritms::sorting::quick_sort::quick_sort;
-
-use crate::algoritms::sorting::bubble_sort::bubble_sort;
 use crate::data_structures::hash_tables::MoMap;
 
 fn main() {
@@ -42,10 +34,10 @@ fn main() {
     my_map.bla();
     my_map.insert("c".to_string(), 11);
     my_map.bla();
-    let test = my_map.get("mohamad").unwrap();
+    let test = my_map.get("mohamad");
 
-    println!("woow: {}", test);
-    // my_map.remove("mohamad");
+    println!("woow: {:?}", test);
+    my_map.remove("mohamad");
     let test = my_map.get("mohamad");
     println!("woow2: {:?}", test);
     my_map.insert("aaaa".to_string(), 123);
