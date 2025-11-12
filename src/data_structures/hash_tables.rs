@@ -64,8 +64,15 @@ where
         }
     }
 
+    /// multiply with a prime number to get a better distribution. using 31 is the better for optimization:
+    /// Bitwise shift and subtraction: The number 31 can be expressed as `(2^{5}-1`.
+    /// This allows a compiler to replace the multiplication with a much faster bitwise left shift
+    /// and a subtraction: `$31 * i$ becomes (i << 5) - i`.
     fn hash_with_size(&self, chars: Chars, size: usize) -> usize {
-        let sum: usize = chars.map(|c| c as usize).sum();
+        let sum: usize = chars
+            .into_iter()
+            .fold(0, |hash, c| hash.wrapping_mul(31).wrapping_add(c as usize));
+
         sum % size
     }
 
