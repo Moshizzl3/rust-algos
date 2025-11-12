@@ -80,6 +80,7 @@ where
         self.hash_with_size(chars, self.buckets.len())
     }
 
+    /// resize when load factor of 0.7 is hit
     fn resize(&mut self) {
         let new_size = self.buckets.len() * 2;
 
