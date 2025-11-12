@@ -64,22 +64,25 @@ where
         }
     }
 
-    fn hashing_function(&self, chars: Chars) -> usize {
+    fn hash_with_size(&self, chars: Chars, size: usize) -> usize {
         let sum: usize = chars.map(|c| c as usize).sum();
+        sum % size
+    }
 
-        sum % self.buckets.len()
+    fn hashing_function(&self, chars: Chars) -> usize {
+        self.hash_with_size(chars, self.buckets.len())
     }
 
     fn resize(&mut self) {
-        let count = self.buckets.iter().filter(|x| !x.is_empty()).count() as f64;
+        let new_size = self.buckets.len() * 2;
 
-        if count / self.buckets.len() as f64 >= 0.7 {
-            let mut new_buckets: Vec<Vec<(String, V)>> = vec![Vec::new(); self.buckets.len() * 2];
+        if self.bucket_item_count as f64 / self.buckets.len() as f64 >= 0.7 {
+            let mut new_buckets: Vec<Vec<(String, V)>> = vec![Vec::new(); new_size];
             self.bucket_item_count = 0;
             self.buckets.clone().iter().for_each(|x| {
                 x.clone().iter().for_each(|x| {
                     let clones_value = x.clone();
-                    let index: usize = self.hashing_function(clones_value.0.chars());
+                    let index: usize = self.hash_with_size(clones_value.0.chars(), new_size);
                     new_buckets[index].push((clones_value.0, clones_value.1));
                     self.bucket_item_count += 1;
                 })
