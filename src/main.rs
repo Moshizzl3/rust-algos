@@ -35,11 +35,11 @@ fn main() {
     my_map.bla();
     my_map.insert(12, 11);
     my_map.bla();
-    let test = my_map.get(3);
+    let test = my_map.get(&3);
 
     println!("woow: {:?}", test);
-    my_map.remove(3);
-    let test = my_map.get(3);
+    my_map.remove(&3);
+    let test = my_map.get(&3);
     println!("woow2: {:?}", test);
     my_map.insert(3, 123);
     my_map.bla();
