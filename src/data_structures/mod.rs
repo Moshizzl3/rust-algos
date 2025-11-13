@@ -1,2 +1,3 @@
+pub mod graphs;
 pub mod hash_tables;
 pub mod hash_tables_generic;
