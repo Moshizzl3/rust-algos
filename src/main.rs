@@ -1,45 +1,46 @@
 mod algoritms;
 mod data_structures;
 
-use crate::data_structures::hash_tables::MoMap;
+// use crate::data_structures::hash_tables::MoMap;
+use crate::data_structures::hash_tables_generic::MoMap;
 
 fn main() {
-    let mut my_map: MoMap<u32> = MoMap::new();
+    let mut my_map: MoMap<u32, u32> = MoMap::new();
 
     my_map.bla();
 
-    my_map.insert("hello".to_string(), 32);
+    my_map.insert(1, 32);
     my_map.bla();
-    my_map.insert("hello1".to_string(), 32);
+    my_map.insert(2, 32);
     my_map.bla();
-    my_map.insert("aaaa".to_string(), 42);
+    my_map.insert(3, 42);
     my_map.bla();
-    my_map.insert("mohamad".to_string(), 11);
+    my_map.insert(3, 11);
     my_map.bla();
-    my_map.insert("mohasbcdqdasdaamad".to_string(), 11);
+    my_map.insert(4, 11);
     my_map.bla();
-    my_map.insert("ddddddd".to_string(), 11);
+    my_map.insert(5, 11);
     my_map.bla();
-    my_map.insert("ddddaaaaaaddd".to_string(), 11);
+    my_map.insert(6, 11);
     my_map.bla();
-    my_map.insert("llllllll".to_string(), 11);
+    my_map.insert(7, 11);
     my_map.bla();
-    my_map.insert("kkkkkkkk".to_string(), 11);
+    my_map.insert(8, 11);
     my_map.bla();
-    my_map.insert("k".to_string(), 11);
+    my_map.insert(9, 11);
     my_map.bla();
-    my_map.insert("a".to_string(), 11);
+    my_map.insert(10, 11);
     my_map.bla();
-    my_map.insert("b".to_string(), 11);
+    my_map.insert(11, 11);
     my_map.bla();
-    my_map.insert("c".to_string(), 11);
+    my_map.insert(12, 11);
     my_map.bla();
-    let test = my_map.get("mohamad");
+    let test = my_map.get(3);
 
     println!("woow: {:?}", test);
-    my_map.remove("mohamad");
-    let test = my_map.get("mohamad");
+    my_map.remove(3);
+    let test = my_map.get(3);
     println!("woow2: {:?}", test);
-    my_map.insert("aaaa".to_string(), 123);
+    my_map.insert(3, 123);
     my_map.bla();
 }

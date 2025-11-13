@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use std::str::Chars;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 pub struct MoMap<K, V> {
     bucket_item_count: u32,
@@ -8,7 +8,7 @@ pub struct MoMap<K, V> {
 
 impl<K, V> MoMap<K, V>
 where
-    K: Clone + IntoIterator + PartialEq,
+    K: Clone + PartialEq + Hash,
     V: Clone,
 {
     pub fn new() -> Self {
@@ -31,7 +31,7 @@ where
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         self.resize();
-        let index: usize = self.hashing_function(key.chars());
+        let index: usize = self.hashing_function(&key);
         let bucket = &mut self.buckets[index];
         if let Some(existing) = bucket.iter_mut().find(|x| x.0 == key) {
             let old_value = std::mem::replace(&mut existing.1, value);
@@ -43,19 +43,19 @@ where
         }
     }
 
-    pub fn get(&self, key: &K) -> Option<&V> {
-        let index: usize = self.hashing_function(key.chars());
+    pub fn get(&self, key: K) -> Option<&V> {
+        let index: usize = self.hashing_function(&key);
         self.buckets[index]
             .iter()
             .find(|x| x.0 == key)
             .map(|x| &x.1)
     }
 
-    pub fn remove(&mut self, key: &K) -> Option<V> {
-        let index: usize = self.hashing_function(key.chars());
+    pub fn remove(&mut self, key: K) -> Option<V> {
+        let index: usize = self.hashing_function(&key);
         let bucket = &mut self.buckets[index];
 
-        match bucket.iter().position(|x| x.0 == *key) {
+        match bucket.iter().position(|x| x.0 == key) {
             Some(v) => {
                 self.bucket_item_count -= 1;
                 Some(bucket.swap_remove(v).1)
@@ -64,20 +64,17 @@ where
         }
     }
 
-    /// multiply with a prime number to get a better distribution. using 31 is the better for optimization:
-    /// Bitwise shift and subtraction: The number 31 can be expressed as `(2^{5}-1`.
-    /// This allows a compiler to replace the multiplication with a much faster bitwise left shift
-    /// and a subtraction: `$31 * i$ becomes (i << 5) - i`.
-    fn hash_with_size(&self, chars: K, size: usize) -> usize {
-        let sum: usize = chars
-            .into_iter()
-            .fold(0, |hash, c| hash.wrapping_mul(31).wrapping_add(c as usize));
+    fn hash_with_size(&self, key: &K, size: usize) -> usize {
+        let mut hasher = DefaultHasher::new();
 
-        sum % size
+        key.hash(&mut hasher);
+        let hash_value = hasher.finish() as usize;
+
+        hash_value % size
     }
 
-    fn hashing_function(&self, chars: K) -> usize {
-        self.hash_with_size(chars, self.buckets.len())
+    fn hashing_function(&self, key: &K) -> usize {
+        self.hash_with_size(key, self.buckets.len())
     }
 
     /// resize when load factor of 0.7 is hit
@@ -90,7 +87,7 @@ where
             self.buckets.clone().iter().for_each(|x| {
                 x.clone().iter().for_each(|x| {
                     let clones_value = x.clone();
-                    let index: usize = self.hash_with_size(clones_value.0.chars(), new_size);
+                    let index: usize = self.hash_with_size(&clones_value.0, new_size);
                     new_buckets[index].push((clones_value.0, clones_value.1));
                     self.bucket_item_count += 1;
                 })
