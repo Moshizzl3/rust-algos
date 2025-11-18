@@ -2,45 +2,42 @@ mod algoritms;
 mod data_structures;
 
 // use crate::data_structures::hash_tables::MoMap;
-use crate::data_structures::hash_tables_generic::MoMap;
+use crate::data_structures::graphs::{MoGraph, Profile};
 
 fn main() {
-    let mut my_map: MoMap<u32, u32> = MoMap::new();
+    let mut mo_graph = MoGraph::new();
+    mo_graph.add_edge(
+        "Mo".to_string(),
+        Profile {
+            name: "bob".to_string(),
+            is_seller: false,
+        },
+    );
+    mo_graph.add_edge(
+        "Mo".to_string(),
+        Profile {
+            name: "Moh".to_string(),
+            is_seller: true,
+        },
+    );
+    mo_graph.add_edge(
+        "Moh".to_string(),
+        Profile {
+            name: "Susan".to_string(),
+            is_seller: false,
+        },
+    );
+    mo_graph.add_edge(
+        "Susan".to_string(),
+        Profile {
+            name: "henry".to_string(),
+            is_seller: true,
+        },
+    );
 
-    my_map.bla();
+    println!("{:?}", mo_graph);
 
-    my_map.insert(1, 32);
-    my_map.bla();
-    my_map.insert(2, 32);
-    my_map.bla();
-    my_map.insert(3, 42);
-    my_map.bla();
-    my_map.insert(3, 11);
-    my_map.bla();
-    my_map.insert(4, 11);
-    my_map.bla();
-    my_map.insert(5, 11);
-    my_map.bla();
-    my_map.insert(6, 11);
-    my_map.bla();
-    my_map.insert(7, 11);
-    my_map.bla();
-    my_map.insert(8, 11);
-    my_map.bla();
-    my_map.insert(9, 11);
-    my_map.bla();
-    my_map.insert(10, 11);
-    my_map.bla();
-    my_map.insert(11, 11);
-    my_map.bla();
-    my_map.insert(12, 11);
-    my_map.bla();
-    let test = my_map.get(&3);
+    let seller = mo_graph.bfs("Mo", |x| x.is_seller);
 
-    println!("woow: {:?}", test);
-    my_map.remove(&3);
-    let test = my_map.get(&3);
-    println!("woow2: {:?}", test);
-    my_map.insert(3, 123);
-    my_map.bla();
+    println!("The first seller is: {:?}", seller)
 }
