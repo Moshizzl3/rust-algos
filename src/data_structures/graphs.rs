@@ -166,7 +166,7 @@ mod tests {
         // Should only have one node (or_insert doesn't replace)
         assert_eq!(graph.nodes.len(), 1);
         // Original value should remain
-        assert_eq!(graph.get_node("alice").unwrap().is_seller, false);
+        assert!(!graph.get_node("alice").unwrap().is_seller);
     }
 
     #[test]
@@ -229,12 +229,242 @@ mod tests {
 
         let node = graph.get_node("alice").unwrap();
         assert_eq!(node.name, "alice");
-        assert_eq!(node.is_seller, true);
+        assert!(node.is_seller);
     }
 
     #[test]
     fn test_get_nonexistent_node() {
         let graph = MoGraph::new();
         assert!(graph.get_node("nobody").is_none());
+    }
+    // BFS tests
+    #[test]
+    fn test_bfs_find_seller() {
+        let graph = create_test_graph();
+
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        assert!(result.is_some());
+        let seller = result.unwrap();
+        assert!(seller.is_seller);
+        // Should find thom or jonny (both are sellers)
+        assert!(seller.name == "thom" || seller.name == "jonny");
+    }
+
+    #[test]
+    fn test_bfs_finds_closest_match() {
+        let mut graph = MoGraph::new();
+
+        // Create a path: you -> a -> b -> seller1
+        //                you -> seller2
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "a".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "b".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "seller1".to_string(),
+            is_seller: true,
+        });
+        graph.add_node(Node {
+            name: "seller2".to_string(),
+            is_seller: true,
+        });
+
+        graph.add_edge("you".to_string(), "a".to_string());
+        graph.add_edge("a".to_string(), "b".to_string());
+        graph.add_edge("b".to_string(), "seller1".to_string());
+        graph.add_edge("you".to_string(), "seller2".to_string());
+
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        // BFS should find seller2 (1 hop) before seller1 (3 hops)
+        assert_eq!(result.unwrap().name, "seller2");
+    }
+
+    #[test]
+    fn test_bfs_start_node_matches() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: true,
+        });
+
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "you");
+    }
+
+    #[test]
+    fn test_bfs_no_match_found() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "bob".to_string(),
+            is_seller: false,
+        });
+
+        graph.add_edge("you".to_string(), "alice".to_string());
+        graph.add_edge("you".to_string(), "bob".to_string());
+
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_bfs_with_custom_condition() {
+        let graph = create_test_graph();
+
+        // Find someone named "peggy"
+        let result = graph.bfs("you", |node| node.name == "peggy");
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "peggy");
+    }
+
+    #[test]
+    fn test_bfs_with_name_condition() {
+        let graph = create_test_graph();
+
+        // Find someone whose name starts with 't'
+        let result = graph.bfs("you", |node| node.name.starts_with('t'));
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "thom");
+    }
+
+    #[test]
+    fn test_bfs_isolated_node() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "isolated".to_string(),
+            is_seller: true,
+        });
+
+        // No edges, so "isolated" can't be reached from "you"
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_bfs_handles_cycles() {
+        let mut graph = MoGraph::new();
+
+        // Create a cycle: a -> b -> c -> a
+        graph.add_node(Node {
+            name: "a".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "b".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "c".to_string(),
+            is_seller: true,
+        });
+
+        graph.add_edge("a".to_string(), "b".to_string());
+        graph.add_edge("b".to_string(), "c".to_string());
+        graph.add_edge("c".to_string(), "a".to_string());
+
+        let result = graph.bfs("a", |node| node.is_seller);
+
+        // Should find c without infinite loop
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "c");
+    }
+
+    #[test]
+    fn test_bfs_large_graph() {
+        let mut graph = MoGraph::new();
+
+        // Create a larger graph
+        for i in 0..100 {
+            graph.add_node(Node {
+                name: format!("node{}", i),
+                is_seller: i == 99, // Only last one is seller
+            });
+        }
+
+        // Create a chain: node0 -> node1 -> node2 -> ... -> node99
+        for i in 0..99 {
+            graph.add_edge(format!("node{}", i), format!("node{}", i + 1));
+        }
+
+        let result = graph.bfs("node0", |node| node.is_seller);
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "node99");
+    }
+
+    #[test]
+    fn test_bfs_from_nonexistent_start() {
+        let graph = create_test_graph();
+
+        let result = graph.bfs("nobody", |node| node.is_seller);
+
+        // Start node doesn't exist, should return None
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_bfs_multiple_paths_to_same_node() {
+        let mut graph = MoGraph::new();
+
+        // Diamond pattern:
+        //     you
+        //    /   \
+        //   a     b
+        //    \   /
+        //   target
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "a".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "b".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "target".to_string(),
+            is_seller: true,
+        });
+
+        graph.add_edge("you".to_string(), "a".to_string());
+        graph.add_edge("you".to_string(), "b".to_string());
+        graph.add_edge("a".to_string(), "target".to_string());
+        graph.add_edge("b".to_string(), "target".to_string());
+
+        let result = graph.bfs("you", |node| node.is_seller);
+
+        // Should find target via shortest path (2 hops)
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().name, "target");
     }
 }
