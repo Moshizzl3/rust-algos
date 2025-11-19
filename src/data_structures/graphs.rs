@@ -46,12 +46,15 @@ impl MoGraph {
     ///
     /// # Returns
     ///
-    /// Returns `Some(Profile)` if a node matching the condition is found, `None` otherwise.
+    /// Returns `Some(Node)` if a node matching the condition is found, `None` otherwise.
     ///
-    pub fn bfs<F>(&self, start: &str, condition: F) -> Option<&Node>
+    pub fn bfs<F>(&self, start: &str, condition: &F) -> Option<&Node>
     where
         F: Fn(&Node) -> bool,
     {
+        if !self.nodes.contains_key(start) {
+            return None;
+        }
         let mut queue = VecDeque::new();
         let mut visited = HashSet::new();
 
@@ -72,6 +75,55 @@ impl MoGraph {
                 }
             }
         }
+        None
+    }
+
+    /// Depth-first search
+    ///
+    /// # Arguments
+    ///
+    /// * `start` - The name of the starting node
+    /// * `condition` - A predicate function that returns `true` when the desired node is found
+    ///
+    /// # Returns
+    ///
+    /// Returns `Some(&Node)` if a node matching the condition is found, `None` otherwise.
+    pub fn dfs<F>(&self, start: &str, condition: &F) -> Option<&Node>
+    where
+        F: Fn(&Node) -> bool,
+    {
+        let mut visited: HashSet<String> = HashSet::new();
+        self.dfs_helper(start, &condition, &mut visited)
+    }
+
+    fn dfs_helper<F>(
+        &self,
+        start: &str,
+        condition: &F,
+        visited: &mut HashSet<String>,
+    ) -> Option<&Node>
+    where
+        F: Fn(&Node) -> bool,
+    {
+        if visited.contains(start) {
+            return None;
+        }
+        visited.insert(start.to_string());
+
+        if let Some(node) = self.nodes.get(start)
+            && condition(node)
+        {
+            return Some(node);
+        }
+        if let Some(neighbors) = self.neighbors(start) {
+            for neighbor in neighbors {
+                println!("yo neighbor: {:?}", neighbor);
+                if let Some(result) = self.dfs_helper(neighbor, condition, visited) {
+                    return Some(result);
+                }
+            }
+        }
+
         None
     }
 }
@@ -242,7 +294,7 @@ mod tests {
     fn test_bfs_find_seller() {
         let graph = create_test_graph();
 
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         assert!(result.is_some());
         let seller = result.unwrap();
@@ -283,7 +335,7 @@ mod tests {
         graph.add_edge("b".to_string(), "seller1".to_string());
         graph.add_edge("you".to_string(), "seller2".to_string());
 
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         // BFS should find seller2 (1 hop) before seller1 (3 hops)
         assert_eq!(result.unwrap().name, "seller2");
@@ -297,7 +349,7 @@ mod tests {
             is_seller: true,
         });
 
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         assert!(result.is_some());
         assert_eq!(result.unwrap().name, "you");
@@ -322,7 +374,7 @@ mod tests {
         graph.add_edge("you".to_string(), "alice".to_string());
         graph.add_edge("you".to_string(), "bob".to_string());
 
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         assert!(result.is_none());
     }
@@ -332,7 +384,7 @@ mod tests {
         let graph = create_test_graph();
 
         // Find someone named "peggy"
-        let result = graph.bfs("you", |node| node.name == "peggy");
+        let result = graph.bfs("you", &|node| node.name == "peggy");
 
         assert!(result.is_some());
         assert_eq!(result.unwrap().name, "peggy");
@@ -343,7 +395,7 @@ mod tests {
         let graph = create_test_graph();
 
         // Find someone whose name starts with 't'
-        let result = graph.bfs("you", |node| node.name.starts_with('t'));
+        let result = graph.bfs("you", &|node| node.name.starts_with('t'));
 
         assert!(result.is_some());
         assert_eq!(result.unwrap().name, "thom");
@@ -362,7 +414,7 @@ mod tests {
         });
 
         // No edges, so "isolated" can't be reached from "you"
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         assert!(result.is_none());
     }
@@ -389,7 +441,7 @@ mod tests {
         graph.add_edge("b".to_string(), "c".to_string());
         graph.add_edge("c".to_string(), "a".to_string());
 
-        let result = graph.bfs("a", |node| node.is_seller);
+        let result = graph.bfs("a", &|node| node.is_seller);
 
         // Should find c without infinite loop
         assert!(result.is_some());
@@ -413,7 +465,7 @@ mod tests {
             graph.add_edge(format!("node{}", i), format!("node{}", i + 1));
         }
 
-        let result = graph.bfs("node0", |node| node.is_seller);
+        let result = graph.bfs("node0", &|node| node.is_seller);
 
         assert!(result.is_some());
         assert_eq!(result.unwrap().name, "node99");
@@ -423,7 +475,7 @@ mod tests {
     fn test_bfs_from_nonexistent_start() {
         let graph = create_test_graph();
 
-        let result = graph.bfs("nobody", |node| node.is_seller);
+        let result = graph.bfs("nobody", &|node| node.is_seller);
 
         // Start node doesn't exist, should return None
         assert!(result.is_none());
@@ -461,10 +513,11 @@ mod tests {
         graph.add_edge("a".to_string(), "target".to_string());
         graph.add_edge("b".to_string(), "target".to_string());
 
-        let result = graph.bfs("you", |node| node.is_seller);
+        let result = graph.bfs("you", &|node| node.is_seller);
 
         // Should find target via shortest path (2 hops)
         assert!(result.is_some());
         assert_eq!(result.unwrap().name, "target");
     }
 }
+
