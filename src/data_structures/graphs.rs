@@ -84,7 +84,7 @@ mod tests {
     fn create_test_graph() -> MoGraph {
         let mut graph = MoGraph::new();
 
-        // Add nodes
+        // nodes
         graph.add_node(Node {
             name: "you".to_string(),
             is_seller: false,
@@ -118,7 +118,7 @@ mod tests {
             is_seller: true,
         });
 
-        // Add edges (from the book example)
+        // edges (from the book example)
         graph.add_edge("you".to_string(), "alice".to_string());
         graph.add_edge("you".to_string(), "bob".to_string());
         graph.add_edge("you".to_string(), "claire".to_string());
@@ -129,5 +129,112 @@ mod tests {
         graph.add_edge("claire".to_string(), "jonny".to_string());
 
         graph
+    }
+
+    // graph structure tests
+    #[test]
+    fn test_new_graph_is_empty() {
+        let graph = MoGraph::new();
+        assert_eq!(graph.nodes.len(), 0);
+        assert_eq!(graph.adjacency_list.len(), 0);
+    }
+
+    #[test]
+    fn test_add_node() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+
+        assert_eq!(graph.nodes.len(), 1);
+        assert!(graph.get_node("alice").is_some());
+    }
+
+    #[test]
+    fn test_add_duplicate_node() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: true,
+        });
+
+        // Should only have one node (or_insert doesn't replace)
+        assert_eq!(graph.nodes.len(), 1);
+        // Original value should remain
+        assert_eq!(graph.get_node("alice").unwrap().is_seller, false);
+    }
+
+    #[test]
+    fn test_add_edge() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "bob".to_string(),
+            is_seller: false,
+        });
+
+        graph.add_edge("alice".to_string(), "bob".to_string());
+
+        let neighbors = graph.neighbors("alice").unwrap();
+        assert_eq!(neighbors.len(), 1);
+        assert_eq!(neighbors[0], "bob");
+    }
+
+    #[test]
+    fn test_add_multiple_edges_from_same_node() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "bob".to_string(),
+            is_seller: false,
+        });
+
+        graph.add_edge("you".to_string(), "alice".to_string());
+        graph.add_edge("you".to_string(), "bob".to_string());
+
+        let neighbors = graph.neighbors("you").unwrap();
+        assert_eq!(neighbors.len(), 2);
+        assert!(neighbors.contains(&"alice".to_string()));
+        assert!(neighbors.contains(&"bob".to_string()));
+    }
+
+    #[test]
+    fn test_neighbors_nonexistent_node() {
+        let graph = MoGraph::new();
+        assert!(graph.neighbors("nobody").is_none());
+    }
+
+    #[test]
+    fn test_get_node() {
+        let mut graph = MoGraph::new();
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: true,
+        });
+
+        let node = graph.get_node("alice").unwrap();
+        assert_eq!(node.name, "alice");
+        assert_eq!(node.is_seller, true);
+    }
+
+    #[test]
+    fn test_get_nonexistent_node() {
+        let graph = MoGraph::new();
+        assert!(graph.get_node("nobody").is_none());
     }
 }
