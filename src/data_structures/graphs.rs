@@ -58,10 +58,10 @@ impl MoGraph {
         queue.push_back(start.to_string());
 
         while let Some(key) = queue.pop_front() {
-            if let Some(node) = self.nodes.get(&key) {
-                if condition(node) {
-                    return Some(&node);
-                }
+            if let Some(node) = self.nodes.get(&key)
+                && condition(node)
+            {
+                return Some(node);
             }
             if let Some(neighbors) = self.neighbors(&key) {
                 for neighbor in neighbors {
@@ -73,5 +73,61 @@ impl MoGraph {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Helper function to create a simple graph for testing
+    fn create_test_graph() -> MoGraph {
+        let mut graph = MoGraph::new();
+
+        // Add nodes
+        graph.add_node(Node {
+            name: "you".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "alice".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "bob".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "claire".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "anuj".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "peggy".to_string(),
+            is_seller: false,
+        });
+        graph.add_node(Node {
+            name: "thom".to_string(),
+            is_seller: true,
+        });
+        graph.add_node(Node {
+            name: "jonny".to_string(),
+            is_seller: true,
+        });
+
+        // Add edges (from the book example)
+        graph.add_edge("you".to_string(), "alice".to_string());
+        graph.add_edge("you".to_string(), "bob".to_string());
+        graph.add_edge("you".to_string(), "claire".to_string());
+        graph.add_edge("bob".to_string(), "anuj".to_string());
+        graph.add_edge("bob".to_string(), "peggy".to_string());
+        graph.add_edge("alice".to_string(), "peggy".to_string());
+        graph.add_edge("claire".to_string(), "thom".to_string());
+        graph.add_edge("claire".to_string(), "jonny".to_string());
+
+        graph
     }
 }
