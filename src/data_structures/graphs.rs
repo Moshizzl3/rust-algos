@@ -23,7 +23,7 @@ impl MoGraph {
     }
 
     pub fn add_node(&mut self, node: Node) {
-        self.nodes.entry(node.name.clone()).or_insert(node);
+        self.nodes.insert(node.name.clone(), node);
     }
 
     pub fn add_edge(&mut self, from: String, to: String) {
@@ -215,10 +215,10 @@ mod tests {
             is_seller: true,
         });
 
-        // Should only have one node (or_insert doesn't replace)
+        // Should only have one node (but is replaces)
         assert_eq!(graph.nodes.len(), 1);
-        // Original value should remain
-        assert!(!graph.get_node("alice").unwrap().is_seller);
+        // Original value should be replaces
+        assert!(graph.get_node("alice").unwrap().is_seller);
     }
 
     #[test]
