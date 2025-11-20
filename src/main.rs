@@ -1,12 +1,14 @@
 mod algoritms;
 mod data_structures;
 
+use std::fs;
+use std::time::{Duration, Instant};
 use std::{cell::RefCell, collections::VecDeque, fs::read_dir, rc::Rc};
 
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
     algoritms::{
-        compression::huffman::{build_huffman_tree, count_frequencies},
+        compression::huffman::{build_huffman_tree, count_frequencies, encode, generate_codes},
         search,
     },
     data_structures::{
@@ -37,7 +39,37 @@ fn print_tree(node: &Rc<RefCell<TreeNode>>, prefix: String, is_left: bool) {
 }
 
 fn main() {
-    let text = "raspberry";
-    let tree = build_huffman_tree(text).unwrap();
-    print_tree(&tree, "".to_string(), false);
+    let text = fs::read_to_string("moby_dick.txt").expect("Failed to read file");
+
+    println!("File size: {} characters", text.len());
+    let start = Instant::now();
+    // Build tree
+    println!("Building Huffman tree...");
+    let tree = build_huffman_tree(&text).unwrap();
+
+    println!("Generating codes...");
+    let codes = generate_codes(&tree);
+
+    println!("Encoding...");
+    let encoded = encode(&text, &codes).unwrap();
+
+    // Stats
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?} ms", duration.as_millis());
+    let original_bits = text.len() * 8;
+    let compressed_bits = encoded.len();
+    let ratio = (1.0 - (compressed_bits as f64 / original_bits as f64)) * 100.0;
+
+    println!("\nResults:");
+    println!(
+        "Original: {} bits ({} KB)",
+        original_bits,
+        text.len() / 1024
+    );
+    println!(
+        "Compressed: {} bits ({} KB)",
+        compressed_bits,
+        compressed_bits / 8 / 1024
+    );
+    println!("Compression: {:.2}%", ratio);
 }
