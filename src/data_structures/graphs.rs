@@ -13,7 +13,6 @@ pub struct MoGraph {
     nodes: HashMap<String, Node>,
     adjacency_list: HashMap<String, Vec<String>>,
 }
-
 impl MoGraph {
     pub fn new() -> Self {
         Self {
