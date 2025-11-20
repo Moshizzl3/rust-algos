@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-struct TreeNode {
-    character: Option<char>,
-    frequency: usize,
+pub struct TreeNode {
+    pub character: Option<char>,
+    pub frequency: usize,
     left: Option<Rc<RefCell<TreeNode>>>,
     right: Option<Rc<RefCell<TreeNode>>>,
 }
@@ -36,4 +36,3 @@ impl TreeNode {
         self.left.is_none() && self.right.is_none()
     }
 }
-
