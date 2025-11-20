@@ -5,6 +5,7 @@ use std::fs;
 use std::time::{Duration, Instant};
 use std::{cell::RefCell, collections::VecDeque, fs::read_dir, rc::Rc};
 
+use crate::algoritms::compression::huffman::decode;
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
     algoritms::{
@@ -72,4 +73,16 @@ fn main() {
         compressed_bits / 8 / 1024
     );
     println!("Compression: {:.2}%", ratio);
+
+    let decoded = decode(&encoded, &tree).unwrap();
+    if text == decoded {
+        println!("SUCCESS! Decoded text matches original!");
+        println!(
+            "Compressed {} chars to {} bits and back!",
+            text.len(),
+            encoded.len()
+        );
+    } else {
+        println!("ERROR: Decoded text doesn't match!");
+    }
 }

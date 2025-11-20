@@ -1,5 +1,6 @@
 //simple Huffman algorithm for compressing text
 use crate::data_structures::tree::TreeNode;
+use core::borrow;
 use std::cmp::Ordering;
 
 use std::collections::BinaryHeap;
@@ -93,6 +94,48 @@ pub fn encode(text: &str, codes: &HashMap<char, String>) -> Result<String, Strin
         match codes.get(&ch) {
             Some(code) => result.push_str(code),
             None => return Err(format!("Character '{}' not in codes", ch)),
+        }
+    }
+
+    Ok(result)
+}
+
+pub fn decode(encoded: &str, tree: &Rc<RefCell<TreeNode>>) -> Result<String, String> {
+    let mut result = String::new();
+    let mut current_node = tree.clone();
+
+    for bit in encoded.chars() {
+        let borrowed = current_node.borrow();
+        let left_node = borrowed.left.clone();
+        let right_node = borrowed.right.clone();
+        drop(borrowed);
+        if bit == '0' {
+            if let Some(ref left) = left_node {
+                current_node = left.clone();
+            } else {
+                return Err(
+                    "Invalid encoded string: tried to go left but no left child".to_string()
+                );
+            }
+        } else if bit == '1' {
+            if let Some(ref right) = right_node {
+                current_node = right.clone();
+            } else {
+                return Err(
+                    "Invalid encoded string: tried to go right but no right child".to_string(),
+                );
+            }
+        } else {
+            return Err(format!("Invalid bit: '{}' (expected '0' or '1')", bit));
+        }
+        let borrowed = current_node.borrow();
+
+        if let Some(char) = borrowed.character
+            && borrowed.is_leaf()
+        {
+            result.push(char);
+            drop(borrowed);
+            current_node = tree.clone()
         }
     }
 
