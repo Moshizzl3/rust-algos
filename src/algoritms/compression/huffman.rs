@@ -1,4 +1,4 @@
-//simple Hufman algorithm for compressing text
+//simple Huffman algorithm for compressing text
 use crate::data_structures::tree::TreeNode;
 use std::cmp::Ordering;
 
@@ -14,7 +14,7 @@ pub fn count_frequencies(text: &str) -> HashMap<char, usize> {
     freq_map
 }
 
-pub fn build_hufman_tree(text: &str) -> Option<Rc<RefCell<TreeNode>>> {
+pub fn build_huffman_tree(text: &str) -> Option<Rc<RefCell<TreeNode>>> {
     let freq_map = count_frequencies(text);
     if freq_map.is_empty() {
         return None;

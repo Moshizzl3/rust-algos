@@ -5,7 +5,7 @@ use std::{collections::VecDeque, fs::read_dir};
 
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
-    algoritms::{compression::hufman::count_frequencies, search},
+    algoritms::{compression::huffman::count_frequencies, search},
     data_structures::graphs::{MoGraph, Node},
 };
 

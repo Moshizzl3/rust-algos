@@ -1,1 +1,1 @@
-pub mod hufman;
+pub mod huffman;
