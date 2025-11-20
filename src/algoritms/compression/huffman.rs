@@ -47,6 +47,58 @@ pub fn build_huffman_tree(text: &str) -> Option<Rc<RefCell<TreeNode>>> {
     heap.pop().map(|heap_node| heap_node.node)
 }
 
+pub fn generate_codes(root: &Rc<RefCell<TreeNode>>) -> HashMap<char, String> {
+    let mut codes = HashMap::new();
+
+    generate_codes_helper(root, &mut String::new(), &mut codes);
+
+    codes
+}
+
+pub fn generate_codes_helper(
+    node: &Rc<RefCell<TreeNode>>,
+    current_code: &mut String,
+    codes: &mut HashMap<char, String>,
+) {
+    let borrowed_node = node.borrow();
+
+    if let Some(char) = borrowed_node.character
+        && borrowed_node.is_leaf()
+    {
+        codes.insert(char, current_code.to_owned());
+        return;
+    }
+
+    let left_node = borrowed_node.left.clone();
+    let right_node = borrowed_node.right.clone();
+    drop(borrowed_node);
+
+    if let Some(left) = left_node {
+        current_code.push('0');
+        generate_codes_helper(&left, current_code, codes);
+        current_code.pop(); // backtrace
+    }
+
+    if let Some(right) = right_node {
+        current_code.push('1');
+        generate_codes_helper(&right, current_code, codes);
+        current_code.pop(); //backtrace
+    }
+}
+
+pub fn encode(text: &str, codes: &HashMap<char, String>) -> Result<String, String> {
+    let mut result = String::new();
+
+    for ch in text.chars() {
+        match codes.get(&ch) {
+            Some(code) => result.push_str(code),
+            None => return Err(format!("Character '{}' not in codes", ch)),
+        }
+    }
+
+    Ok(result)
+}
+
 pub struct HeapNode {
     node: Rc<RefCell<TreeNode>>,
 }
