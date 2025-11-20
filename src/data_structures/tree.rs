@@ -3,8 +3,8 @@ use std::{cell::RefCell, rc::Rc};
 pub struct TreeNode {
     pub character: Option<char>,
     pub frequency: usize,
-    left: Option<Rc<RefCell<TreeNode>>>,
-    right: Option<Rc<RefCell<TreeNode>>>,
+    pub left: Option<Rc<RefCell<TreeNode>>>,
+    pub right: Option<Rc<RefCell<TreeNode>>>,
 }
 
 impl TreeNode {
