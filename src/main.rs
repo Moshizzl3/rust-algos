@@ -40,7 +40,8 @@ fn print_tree(node: &Rc<RefCell<TreeNode>>, prefix: String, is_left: bool) {
 }
 
 fn main() {
-    let text = fs::read_to_string("moby_dick.txt").expect("Failed to read file");
+    let text = fs::read_to_string("./data/moby_dick.txt").expect("Failed to read file");
+    let text_encoded = fs::read_to_string("./data/encoded.txt").expect("Failed to read file");
 
     println!("File size: {} characters", text.len());
     let start = Instant::now();
@@ -56,6 +57,7 @@ fn main() {
 
     // Stats
     let duration = start.elapsed();
+    fs::write("./data/encoded.txt", &encoded).unwrap();
     println!("Time elapsed: {:?} ms", duration.as_millis());
     let original_bits = text.len() * 8;
     let compressed_bits = encoded.len();
@@ -74,7 +76,8 @@ fn main() {
     );
     println!("Compression: {:.2}%", ratio);
 
-    let decoded = decode(&encoded, &tree).unwrap();
+    let decoded = decode(&text_encoded, &tree).unwrap();
+    fs::write("./data/moby_dick2.txt", &decoded).unwrap();
     if text == decoded {
         println!("SUCCESS! Decoded text matches original!");
         println!(
