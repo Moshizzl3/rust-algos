@@ -1,4 +1,4 @@
-// Binary Search Tree (BST)
+// Binary Search Tree (Bst)
 
 use core::borrow;
 use std::{cell::RefCell, rc::Rc};
@@ -108,3 +108,207 @@ impl<K: Ord, V> Bst<K, V> {
 }
 
 // pub fn delete(&mut self, key: &K) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_bst_is_empty() {
+        let bst: Bst<i32, String> = Bst::new();
+        assert!(bst.root.is_none());
+    }
+
+    #[test]
+    fn test_insert_root() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+
+        assert!(bst.root.is_some());
+        let root = bst.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 5);
+        assert_eq!(root.borrow().value, "five");
+    }
+
+    #[test]
+    fn test_insert_multiple() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+
+        let root = bst.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 5);
+        assert!(root.borrow().left.is_some());
+        assert!(root.borrow().right.is_some());
+    }
+
+    #[test]
+    fn test_insert_maintains_bst_property() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+        bst.insert(1, "one");
+        bst.insert(9, "nine");
+
+        let root = bst.root.as_ref().unwrap();
+        let left = root.borrow().left.as_ref().unwrap().clone();
+        let right = root.borrow().right.as_ref().unwrap().clone();
+
+        // Left child < root
+        assert!(left.borrow().key < root.borrow().key);
+        // Right child > root
+        assert!(right.borrow().key > root.borrow().key);
+    }
+
+    #[test]
+    fn test_insert_updates_existing_key() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(5, "FIVE");
+
+        let result = bst.search(&5);
+        assert_eq!(result, Some("FIVE"));
+    }
+
+    #[test]
+    fn test_search_finds_root() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+
+        let result = bst.search(&5);
+        assert_eq!(result, Some("five"));
+    }
+
+    #[test]
+    fn test_search_finds_left_child() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+
+        let result = bst.search(&3);
+        assert_eq!(result, Some("three"));
+    }
+
+    #[test]
+    fn test_search_finds_right_child() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(7, "seven");
+
+        let result = bst.search(&7);
+        assert_eq!(result, Some("seven"));
+    }
+
+    #[test]
+    fn test_search_finds_deep_node() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+        bst.insert(1, "one");
+        bst.insert(9, "nine");
+
+        assert_eq!(bst.search(&1), Some("one"));
+        assert_eq!(bst.search(&9), Some("nine"));
+    }
+
+    #[test]
+    fn test_search_not_found() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+
+        let result = bst.search(&10);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_search_empty_tree() {
+        let bst: Bst<i32, String> = Bst::new();
+        assert_eq!(bst.search(&5), None);
+    }
+
+    #[test]
+    fn test_multiple_inserts_and_searches() {
+        let mut bst = Bst::new();
+        let pairs = vec![
+            (8, "eight"),
+            (3, "three"),
+            (10, "ten"),
+            (1, "one"),
+            (6, "six"),
+            (14, "fourteen"),
+            (4, "four"),
+            (7, "seven"),
+            (13, "thirteen"),
+        ];
+
+        for (key, value) in &pairs {
+            bst.insert(*key, *value);
+        }
+
+        for (key, value) in &pairs {
+            assert_eq!(bst.search(key), Some(*value));
+        }
+    }
+
+    #[test]
+    fn test_insert_ascending_order() {
+        let mut bst = Bst::new();
+        for i in 1..=5 {
+            bst.insert(i, i * 10);
+        }
+
+        // All should be found
+        for i in 1..=5 {
+            assert_eq!(bst.search(&i), Some(i * 10));
+        }
+    }
+
+    #[test]
+    fn test_insert_descending_order() {
+        let mut bst = Bst::new();
+        for i in (1..=5).rev() {
+            bst.insert(i, i * 10);
+        }
+
+        // All should be found
+        for i in 1..=5 {
+            assert_eq!(bst.search(&i), Some(i * 10));
+        }
+    }
+
+    #[test]
+    fn test_search_with_string_keys() {
+        let mut bst = Bst::new();
+        bst.insert("dog".to_string(), 1);
+        bst.insert("cat".to_string(), 2);
+        bst.insert("zebra".to_string(), 3);
+
+        assert_eq!(bst.search(&"dog".to_string()), Some(1));
+        assert_eq!(bst.search(&"cat".to_string()), Some(2));
+        assert_eq!(bst.search(&"zebra".to_string()), Some(3));
+        assert_eq!(bst.search(&"bird".to_string()), None);
+    }
+
+    #[test]
+    fn test_large_tree() {
+        let mut bst = Bst::new();
+
+        // Insert 100 elements
+        for i in 0..100 {
+            bst.insert(i, i * 2);
+        }
+
+        // Search for all of them
+        for i in 0..100 {
+            assert_eq!(bst.search(&i), Some(i * 2));
+        }
+
+        // Search for non-existent
+        assert_eq!(bst.search(&100), None);
+        assert_eq!(bst.search(&-1), None);
+    }
+}
