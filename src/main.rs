@@ -57,4 +57,7 @@ fn main() {
     //   1       9
 
     println!("Inserted!, {:?}", bst);
+    let search_value = bst.search(&9);
+    println!("hi, {:?}", search_value);
+    println!("Inserted!, {:?}", bst);
 }
