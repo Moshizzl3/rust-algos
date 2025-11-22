@@ -3,24 +3,26 @@
 use core::borrow;
 use std::{cell::RefCell, rc::Rc};
 
-pub struct BSTNode<K, V> {
+#[derive(Debug)]
+pub struct BstNode<K, V> {
     pub key: K,
     pub value: V,
-    left: Option<Rc<RefCell<BSTNode<K, V>>>>,
-    right: Option<Rc<RefCell<BSTNode<K, V>>>>,
+    left: Option<Rc<RefCell<BstNode<K, V>>>>,
+    right: Option<Rc<RefCell<BstNode<K, V>>>>,
 }
 
-pub struct BST<K, V> {
-    root: Option<Rc<RefCell<BSTNode<K, V>>>>,
+#[derive(Debug)]
+pub struct Bst<K, V> {
+    root: Option<Rc<RefCell<BstNode<K, V>>>>,
 }
 
-impl<K: Ord, V> BST<K, V> {
+impl<K: Ord, V> Bst<K, V> {
     pub fn new() -> Self {
         Self { root: None }
     }
     pub fn insert(&mut self, key: K, value: V) {
         if self.root.is_none() {
-            self.root = Some(Rc::new(RefCell::new(BSTNode {
+            self.root = Some(Rc::new(RefCell::new(BstNode {
                 key,
                 value,
                 left: None,
@@ -33,7 +35,7 @@ impl<K: Ord, V> BST<K, V> {
         }
     }
 
-    fn insert_helper(node: &Rc<RefCell<BSTNode<K, V>>>, key: K, value: V) {
+    fn insert_helper(node: &Rc<RefCell<BstNode<K, V>>>, key: K, value: V) {
         let borrowed = node.borrow();
 
         if key < borrowed.key {
@@ -42,7 +44,7 @@ impl<K: Ord, V> BST<K, V> {
                 drop(borrowed);
             } else {
                 drop(borrowed);
-                node.borrow_mut().left = Some(Rc::new(RefCell::new(BSTNode {
+                node.borrow_mut().left = Some(Rc::new(RefCell::new(BstNode {
                     key,
                     value,
                     left: None,
@@ -55,7 +57,7 @@ impl<K: Ord, V> BST<K, V> {
                 drop(borrowed);
             } else {
                 drop(borrowed);
-                node.borrow_mut().right = Some(Rc::new(RefCell::new(BSTNode {
+                node.borrow_mut().right = Some(Rc::new(RefCell::new(BstNode {
                     key,
                     value,
                     left: None,

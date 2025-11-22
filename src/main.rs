@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 use std::{cell::RefCell, collections::VecDeque, fs::read_dir, rc::Rc};
 
 use crate::algoritms::compression::huffman::decode;
+use crate::data_structures::bst::Bst;
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
     algoritms::{
@@ -38,54 +39,22 @@ fn print_tree(node: &Rc<RefCell<TreeNode>>, prefix: String, is_left: bool) {
         print_tree(right, new_prefix, false);
     }
 }
-
 fn main() {
-    let text = fs::read_to_string("./data/moby_dick.txt").expect("Failed to read file");
-    let text_encoded = fs::read_to_string("./data/encoded.txt").expect("Failed to read file");
+    let mut bst = Bst::new();
 
-    println!("File size: {} characters", text.len());
-    let start = Instant::now();
-    // Build tree
-    println!("Building Huffman tree...");
-    let tree = build_huffman_tree(&text).unwrap();
+    bst.insert(5, "five");
+    bst.insert(3, "three");
+    bst.insert(7, "seven");
+    bst.insert(1, "one");
+    bst.insert(9, "nine");
+    bst.insert(8, "eight");
 
-    println!("Generating codes...");
-    let codes = generate_codes(&tree);
+    // Tree should look like:
+    //       5
+    //      / \
+    //     3   7
+    //    /     \
+    //   1       9
 
-    println!("Encoding...");
-    let encoded = encode(&text, &codes).unwrap();
-
-    // Stats
-    let duration = start.elapsed();
-    fs::write("./data/encoded.txt", &encoded).unwrap();
-    println!("Time elapsed: {:?} ms", duration.as_millis());
-    let original_bits = text.len() * 8;
-    let compressed_bits = encoded.len();
-    let ratio = (1.0 - (compressed_bits as f64 / original_bits as f64)) * 100.0;
-
-    println!("\nResults:");
-    println!(
-        "Original: {} bits ({} KB)",
-        original_bits,
-        text.len() / 1024
-    );
-    println!(
-        "Compressed: {} bits ({} KB)",
-        compressed_bits,
-        compressed_bits / 8 / 1024
-    );
-    println!("Compression: {:.2}%", ratio);
-
-    let decoded = decode(&text_encoded, &tree).unwrap();
-    fs::write("./data/moby_dick2.txt", &decoded).unwrap();
-    if text == decoded {
-        println!("SUCCESS! Decoded text matches original!");
-        println!(
-            "Compressed {} chars to {} bits and back!",
-            text.len(),
-            encoded.len()
-        );
-    } else {
-        println!("ERROR: Decoded text doesn't match!");
-    }
+    println!("Inserted!, {:?}", bst);
 }
