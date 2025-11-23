@@ -105,7 +105,15 @@ impl<K: Ord, V> Bst<K, V> {
             None
         }
     }
-    // pub fn delete(&mut self, key: &K) {}
+    pub fn delete(&mut self, key: &K)
+    where
+        K: Clone,
+        V: Clone,
+    {
+        if let Some(ref root) = self.root {
+            self.root = Self::delete_helper(root, key)
+        }
+    }
 
     pub fn delete_helper(
         node: &Rc<RefCell<BstNode<K, V>>>,
@@ -366,5 +374,209 @@ mod tests {
         // Search for non-existent
         assert_eq!(bst.search(&100), None);
         assert_eq!(bst.search(&-1), None);
+    }
+
+    // test delete
+    #[test]
+    fn test_delete_leaf() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+        bst.insert(1, "one");
+
+        bst.delete(&1);
+
+        assert_eq!(bst.search(&1), None);
+        assert_eq!(bst.search(&3), Some("three"));
+        assert_eq!(bst.search(&5), Some("five"));
+    }
+
+    #[test]
+    fn test_delete_node_with_left_child_only() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(1, "one");
+
+        bst.delete(&3); // 3 has only left child (1)
+
+        assert_eq!(bst.search(&3), None);
+        assert_eq!(bst.search(&1), Some("one"));
+        assert_eq!(bst.search(&5), Some("five"));
+    }
+
+    #[test]
+    fn test_delete_node_with_right_child_only() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(4, "four");
+
+        bst.delete(&3); // 3 has only right child (4)
+
+        assert_eq!(bst.search(&3), None);
+        assert_eq!(bst.search(&4), Some("four"));
+        assert_eq!(bst.search(&5), Some("five"));
+    }
+
+    #[test]
+    fn test_delete_node_with_two_children() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+        bst.insert(1, "one");
+        bst.insert(4, "four");
+        bst.insert(6, "six");
+        bst.insert(9, "nine");
+
+        bst.delete(&5); // Root with two children
+
+        assert_eq!(bst.search(&5), None);
+        // All others should still exist
+        assert_eq!(bst.search(&3), Some("three"));
+        assert_eq!(bst.search(&7), Some("seven"));
+        assert_eq!(bst.search(&6), Some("six"));
+    }
+
+    #[test]
+    fn test_delete_root_leaf() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+
+        bst.delete(&5);
+
+        assert_eq!(bst.search(&5), None);
+    }
+
+    #[test]
+    fn test_delete_nonexistent() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+
+        bst.delete(&10); // Doesn't exist
+
+        // Nothing should change
+        assert_eq!(bst.search(&5), Some("five"));
+        assert_eq!(bst.search(&3), Some("three"));
+    }
+
+    #[test]
+    fn test_delete_multiple() {
+        let mut bst = Bst::new();
+        for i in 1..=10 {
+            bst.insert(i, i * 10);
+        }
+
+        bst.delete(&5);
+        bst.delete(&3);
+        bst.delete(&8);
+
+        assert_eq!(bst.search(&5), None);
+        assert_eq!(bst.search(&3), None);
+        assert_eq!(bst.search(&8), None);
+
+        assert_eq!(bst.search(&1), Some(10));
+        assert_eq!(bst.search(&7), Some(70));
+    }
+
+    #[test]
+    fn test_delete_all_nodes() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+        bst.insert(3, "three");
+        bst.insert(7, "seven");
+
+        bst.delete(&5);
+        bst.delete(&3);
+        bst.delete(&7);
+
+        assert_eq!(bst.search(&5), None);
+        assert_eq!(bst.search(&3), None);
+        assert_eq!(bst.search(&7), None);
+    }
+
+    #[test]
+    fn test_delete_and_reinsert() {
+        let mut bst = Bst::new();
+        bst.insert(5, "five");
+
+        bst.delete(&5);
+        assert_eq!(bst.search(&5), None);
+
+        bst.insert(5, "FIVE");
+        assert_eq!(bst.search(&5), Some("FIVE"));
+    }
+
+    // String key tests
+    #[test]
+    fn test_delete_with_string_keys() {
+        let mut bst = Bst::new();
+        bst.insert("dog".to_string(), 1);
+        bst.insert("cat".to_string(), 2);
+        bst.insert("zebra".to_string(), 3);
+        bst.insert("ant".to_string(), 4);
+
+        bst.delete(&"cat".to_string());
+
+        assert_eq!(bst.search(&"cat".to_string()), None);
+        assert_eq!(bst.search(&"dog".to_string()), Some(1));
+        assert_eq!(bst.search(&"zebra".to_string()), Some(3));
+    }
+
+    #[test]
+    fn test_delete_string_node_with_two_children() {
+        let mut bst = Bst::new();
+        bst.insert("m".to_string(), 1);
+        bst.insert("d".to_string(), 2);
+        bst.insert("s".to_string(), 3);
+        bst.insert("a".to_string(), 4);
+        bst.insert("h".to_string(), 5);
+        bst.insert("p".to_string(), 6);
+        bst.insert("z".to_string(), 7);
+
+        bst.delete(&"m".to_string()); // Root with two children
+
+        assert_eq!(bst.search(&"m".to_string()), None);
+        assert_eq!(bst.search(&"d".to_string()), Some(2));
+        assert_eq!(bst.search(&"s".to_string()), Some(3));
+        assert_eq!(bst.search(&"p".to_string()), Some(6));
+    }
+
+    #[test]
+    fn test_complex_deletions() {
+        let mut bst = Bst::new();
+        //       8
+        //      / \
+        //     3   10
+        //    / \    \
+        //   1   6   14
+        //      / \  /
+        //     4  7 13
+
+        bst.insert(8, "eight");
+        bst.insert(3, "three");
+        bst.insert(10, "ten");
+        bst.insert(1, "one");
+        bst.insert(6, "six");
+        bst.insert(14, "fourteen");
+        bst.insert(4, "four");
+        bst.insert(7, "seven");
+        bst.insert(13, "thirteen");
+
+        // Delete node with two children
+        bst.delete(&3);
+        assert_eq!(bst.search(&3), None);
+        assert_eq!(bst.search(&4), Some("four")); // Successor should exist
+
+        // Delete another node with two children
+        bst.delete(&10);
+        assert_eq!(bst.search(&10), None);
+
+        // All others should still exist
+        assert_eq!(bst.search(&8), Some("eight"));
+        assert_eq!(bst.search(&1), Some("one"));
     }
 }
