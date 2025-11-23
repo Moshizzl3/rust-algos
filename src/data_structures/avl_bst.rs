@@ -41,5 +41,20 @@ impl<K: Ord + Clone, V: Clone> Avl<K, V> {
         let borrowed = node.borrow();
         Self::get_height(&borrowed.left) - Self::get_height(&borrowed.right)
     }
+    fn rotate_right(y: &NodeRef<K, V>) -> NodeRef<K, V> {
+        let y_borrowed = y.borrow();
+        let x = y_borrowed.left.clone().unwrap();
+        drop(y_borrowed);
 
+        let x_borrowed = x.borrow();
+        let b = x_borrowed.right.clone();
+        drop(x_borrowed);
+        x.borrow_mut().right = Some(y.clone());
+        y.borrow_mut().left = b;
+
+        Self::update_height(y);
+        Self::update_height(&x);
+
+        x
+    }
 }
