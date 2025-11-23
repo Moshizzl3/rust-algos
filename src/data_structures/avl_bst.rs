@@ -74,5 +74,14 @@ impl<K: Ord + Clone, V: Clone> Avl<K, V> {
         x
     }
 
-    
+    fn rotate_left_right(z: &NodeRef<K, V>) -> NodeRef<K, V> {
+        let z_borrow = z.borrow();
+        let x = z_borrow.left.clone().unwrap();
+        drop(z_borrow);
+        let rotated_left = Self::rotate_left(&x);
+        z.borrow_mut().left = Some(rotated_left);
+
+        Self::rotate_right(z)
+    }
+
 }
