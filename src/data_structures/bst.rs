@@ -1,6 +1,11 @@
 // Binary Search Tree (Bst)
 
-use std::{cell::RefCell, rc::Rc};
+use core::{borrow, fmt};
+use std::{
+    cell::{Ref, RefCell},
+    fmt::{Display, write},
+    rc::Rc,
+};
 
 #[derive(Debug)]
 pub struct BSTNode<K, V> {
@@ -159,9 +164,58 @@ impl<K: Ord + Clone, V: Clone> Bst<K, V> {
     pub fn is_empty(&self) -> bool {
         self.root.is_none()
     }
-    
+
     pub fn contains(&self, key: &K) -> bool {
         self.search(key).is_some()
+    }
+}
+
+// custom display implementation
+impl<K: Display + Ord, V: Display> Display for Bst<K, V> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(ref root) = self.root {
+            Self::display_helper(root, f, "", "", true)
+        } else {
+            write!(f, "Empty tree")
+        }
+    }
+}
+
+impl<K: Ord + Display, V: Display> Bst<K, V> {
+    fn display_helper(
+        node: &Rc<RefCell<BSTNode<K, V>>>,
+        f: &mut fmt::Formatter<'_>,
+        prefix: &str,
+        child_prefix: &str,
+        is_root: bool,
+    ) -> fmt::Result {
+        let borrowed = node.borrow();
+        let left_borrowed = borrowed.left.clone();
+        let right_borrowed = borrowed.right.clone();
+
+        if is_root {
+            write!(f, "{}", borrowed.key)?;
+        } else {
+            write!(f, "{}{}", prefix, borrowed.key)?;
+        }
+        drop(borrowed);
+
+        if let Some(left) = left_borrowed {
+            let new_prefix = format!("{}├── ", child_prefix);
+            let new_child_prefix = if right_borrowed.is_some() {
+                format!("{}│   ", child_prefix)
+            } else {
+                format!("{}    ", child_prefix)
+            };
+            Self::display_helper(&left, f, &new_prefix, &new_child_prefix, false)?;
+        }
+        if let Some(ref right) = right_borrowed {
+            let new_prefix = format!("{}└── ", child_prefix);
+            let new_child_prefix = format!("{}    ", child_prefix);
+
+            Self::display_helper(right, f, &new_prefix, &new_child_prefix, false)?;
+        }
+        Ok(())
     }
 }
 
