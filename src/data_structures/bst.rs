@@ -15,7 +15,7 @@ pub struct BSTNode<K, V> {
     pub right: Option<Rc<RefCell<BSTNode<K, V>>>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Bst<K, V> {
     pub root: Option<Rc<RefCell<BSTNode<K, V>>>>,
 }

@@ -1,3 +1,4 @@
+pub mod avl_bst;
 pub mod bst;
 pub mod graphs;
 pub mod hash_tables;
