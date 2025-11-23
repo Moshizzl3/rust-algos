@@ -18,3 +18,28 @@ pub struct AVLNode<K, V> {
 pub struct Avl<K, V> {
     root: Option<NodeRef<K, V>>,
 }
+
+impl<K: Ord + Clone, V: Clone> Avl<K, V> {
+    pub fn new() -> Self {
+        Self { root: None }
+    }
+
+    fn get_height(node: &Option<NodeRef<K, V>>) -> i32 {
+        match node {
+            Some(n) => n.borrow().height,
+            None => 0,
+        }
+    }
+    fn update_height(node: &NodeRef<K, V>) {
+        let mut borrowed = node.borrow_mut();
+        let left_height = Self::get_height(&borrowed.left);
+        let right_height = Self::get_height(&borrowed.right);
+        borrowed.height = 1 + std::cmp::max(left_height, right_height);
+    }
+
+    fn get_balance_factor(node: &NodeRef<K, V>) -> i32 {
+        let borrowed = node.borrow();
+        Self::get_height(&borrowed.left) - Self::get_height(&borrowed.right)
+    }
+
+}
