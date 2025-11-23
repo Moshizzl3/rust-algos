@@ -105,9 +105,65 @@ impl<K: Ord, V> Bst<K, V> {
             None
         }
     }
-}
+    // pub fn delete(&mut self, key: &K) {}
 
-// pub fn delete(&mut self, key: &K) {}
+    pub fn delete_helper(
+        node: &Rc<RefCell<BstNode<K, V>>>,
+        key: &K,
+    ) -> Option<Rc<RefCell<BstNode<K, V>>>>
+    where
+        K: Clone,
+        V: Clone,
+    {
+        let mut borrowed = node.borrow_mut();
+
+        if *key < borrowed.key {
+            if let Some(ref left) = borrowed.left.take() {
+                borrowed.left = Self::delete_helper(left, key);
+            }
+        } else if *key > borrowed.key {
+            if let Some(ref right) = borrowed.right.take() {
+                borrowed.right = Self::delete_helper(right, key);
+            }
+        } else {
+            // Is leaf (no children)
+            if borrowed.left.is_none() && borrowed.right.is_none() {
+                return None;
+            }
+
+            // Parent node has only one child
+
+            if borrowed.left.is_none() {
+                return borrowed.right.take();
+            }
+            if borrowed.right.is_none() {
+                return borrowed.left.take();
+            }
+
+            // Parent node has two children
+            if let Some(ref right) = borrowed.right.take() {
+                let (successor_key, successor_value) = Self::find_min(right);
+                borrowed.key = successor_key;
+                borrowed.value = successor_value;
+                borrowed.right = Self::delete_helper(right, &borrowed.key)
+            }
+        }
+
+        Some(node.clone())
+    }
+
+    fn find_min(node: &Rc<RefCell<BstNode<K, V>>>) -> (K, V)
+    where
+        K: Clone,
+        V: Clone,
+    {
+        let borrowed = node.borrow();
+        if let Some(ref left) = borrowed.left {
+            return Self::find_min(left);
+        }
+        (borrowed.key.clone(), borrowed.value.clone())
+    }
+}
 
 #[cfg(test)]
 mod tests {
