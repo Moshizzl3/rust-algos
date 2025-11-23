@@ -149,12 +149,15 @@ impl<K: Ord, V> Bst<K, V> {
             }
 
             // Parent node has two children
-            if let Some(ref right) = borrowed.right.take() {
-                let (successor_key, successor_value) = Self::find_min(right);
-                borrowed.key = successor_key;
-                borrowed.value = successor_value;
-                borrowed.right = Self::delete_helper(right, &borrowed.key)
-            }
+            // If this panic, something is totally wrong, since have checked for none above
+            let right = borrowed
+                .right
+                .take()
+                .expect("Two children case, right child should exist, should not be None.");
+            let (successor_key, successor_value) = Self::find_min(&right);
+            borrowed.key = successor_key;
+            borrowed.value = successor_value;
+            borrowed.right = Self::delete_helper(&right, &borrowed.key)
         }
 
         Some(node.clone())
