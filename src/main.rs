@@ -19,45 +19,25 @@ use crate::{
     },
 };
 
-fn print_tree(node: &Rc<RefCell<TreeNode>>, prefix: String, is_left: bool) {
-    let n = node.borrow();
-
-    println!(
-        "{}{}─ freq: {}, char: {:?}",
-        prefix,
-        if is_left { "├" } else { "└" },
-        n.frequency,
-        n.character
-    );
-
-    let new_prefix = format!("{}{}", prefix, if is_left { "│ " } else { "  " });
-
-    if let Some(ref left) = n.left {
-        print_tree(left, new_prefix.clone(), true);
-    }
-    if let Some(ref right) = n.right {
-        print_tree(right, new_prefix, false);
-    }
-}
 fn main() {
     let mut bst = Bst::new();
 
-    bst.insert(5, "five");
-    bst.insert(3, "three");
-    bst.insert(7, "seven");
-    bst.insert(1, "one");
-    bst.insert(9, "nine");
-    bst.insert(8, "eight");
+    // Build a balanced-ish tree
+    bst.insert(50, "fifty");
+    bst.insert(30, "thirty");
+    bst.insert(70, "seventy");
+    bst.insert(20, "twenty");
+    bst.insert(40, "forty");
+    bst.insert(60, "sixty");
+    bst.insert(80, "eighty");
+    bst.insert(10, "ten");
+    bst.insert(25, "twenty-five");
+    bst.insert(65, "sixty-five");
+    bst.insert(90, "ninety");
 
-    // Tree should look like:
-    //       5
-    //      / \
-    //     3   7
-    //    /     \
-    //   1       9
+    println!("My BST:\n{}", bst);
 
-    println!("Inserted!, {:?}", bst);
-    let search_value = bst.search(&9);
-    println!("hi, {:?}", search_value);
-    println!("Inserted!, {:?}", bst);
+    // Delete some nodes to see it update
+    bst.delete(&30);
+    println!("\nAfter deleting 30:\n{}", bst);
 }

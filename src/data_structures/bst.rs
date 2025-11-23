@@ -194,9 +194,9 @@ impl<K: Ord + Display, V: Display> Bst<K, V> {
         let right_borrowed = borrowed.right.clone();
 
         if is_root {
-            write!(f, "{}", borrowed.key)?;
+            writeln!(f, "{}", borrowed.key)?;
         } else {
-            write!(f, "{}{}", prefix, borrowed.key)?;
+            writeln!(f, "{}{}", prefix, borrowed.key)?;
         }
         drop(borrowed);
 
