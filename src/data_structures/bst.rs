@@ -155,6 +155,13 @@ impl<K: Ord + Clone, V: Clone> Bst<K, V> {
         }
         (borrowed.key.clone(), borrowed.value.clone())
     }
+    pub fn is_empty(&self) -> bool {
+        self.root.is_none()
+    }
+
+    pub fn contains(&self, key: &K) -> bool {
+        self.search(key).is_some()
+    }
 }
 
 #[cfg(test)]
