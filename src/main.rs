@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 use std::{cell::RefCell, collections::VecDeque, fs::read_dir, rc::Rc};
 
 use crate::algoritms::compression::huffman::decode;
+use crate::data_structures::avl_bst::Avl;
 use crate::data_structures::bst::Bst;
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
@@ -20,24 +21,21 @@ use crate::{
 };
 
 fn main() {
+    let mut avl = Avl::new();
     let mut bst = Bst::new();
 
-    // Build a balanced-ish tree
-    bst.insert(50, "fifty");
-    bst.insert(30, "thirty");
-    bst.insert(70, "seventy");
-    bst.insert(20, "twenty");
-    bst.insert(40, "forty");
-    bst.insert(60, "sixty");
-    bst.insert(80, "eighty");
-    bst.insert(10, "ten");
-    bst.insert(25, "twenty-five");
-    bst.insert(65, "sixty-five");
-    bst.insert(90, "ninety");
+    println!("Inserting 1, 2, 3, 4, 5, 6, 7...\n");
 
-    println!("My BST:\n{}", bst);
+    for i in 1..=7 {
+        avl.insert(i, i * 10);
+    }
+    println!("After inserting avl");
+    println!("{}\n", avl);
 
-    // Delete some nodes to see it update
-    bst.delete(&30);
-    println!("\nAfter deleting 30:\n{}", bst);
+    for i in 1..=7 {
+        bst.insert(i, i * 10);
+    }
+
+    println!("After inserting bst");
+    println!("{}\n", bst);
 }
