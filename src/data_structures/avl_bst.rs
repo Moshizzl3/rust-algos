@@ -346,3 +346,334 @@ impl<K: Ord + Display, V: Display> Avl<K, V> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod avl_tests {
+    use super::*;
+
+    #[test]
+    fn test_new_avl_is_empty() {
+        let avl: Avl<i32, String> = Avl::new();
+        assert!(avl.root.is_none());
+    }
+
+    #[test]
+    fn test_insert_single() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+
+        assert!(avl.root.is_some());
+        assert_eq!(avl.search(&5), Some("five"));
+    }
+
+    #[test]
+    fn test_insert_and_search() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+        avl.insert(3, "three");
+        avl.insert(7, "seven");
+
+        assert_eq!(avl.search(&5), Some("five"));
+        assert_eq!(avl.search(&3), Some("three"));
+        assert_eq!(avl.search(&7), Some("seven"));
+        assert_eq!(avl.search(&10), None);
+    }
+
+    #[test]
+    fn test_insert_updates_existing() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+        avl.insert(5, "FIVE");
+
+        assert_eq!(avl.search(&5), Some("FIVE"));
+    }
+
+    #[test]
+    fn test_right_rotation_ll_case() {
+        let mut avl = Avl::new();
+        avl.insert(3, "three");
+        avl.insert(2, "two");
+        avl.insert(1, "one"); // Triggers LL rotation
+
+        // Root should be 2 after rotation
+        let root = avl.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 2);
+
+        // All values should still be searchable
+        assert_eq!(avl.search(&1), Some("one"));
+        assert_eq!(avl.search(&2), Some("two"));
+        assert_eq!(avl.search(&3), Some("three"));
+    }
+
+    #[test]
+    fn test_left_rotation_rr_case() {
+        let mut avl = Avl::new();
+        avl.insert(1, "one");
+        avl.insert(2, "two");
+        avl.insert(3, "three"); // Triggers RR rotation
+
+        // Root should be 2 after rotation
+        let root = avl.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 2);
+
+        assert_eq!(avl.search(&1), Some("one"));
+        assert_eq!(avl.search(&2), Some("two"));
+        assert_eq!(avl.search(&3), Some("three"));
+    }
+
+    #[test]
+    fn test_left_right_rotation_lr_case() {
+        let mut avl = Avl::new();
+        avl.insert(3, "three");
+        avl.insert(1, "one");
+        avl.insert(2, "two"); // Triggers LR rotation
+
+        // Root should be 2 after rotation
+        let root = avl.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 2);
+
+        assert_eq!(avl.search(&1), Some("one"));
+        assert_eq!(avl.search(&2), Some("two"));
+        assert_eq!(avl.search(&3), Some("three"));
+    }
+
+    #[test]
+    fn test_right_left_rotation_rl_case() {
+        let mut avl = Avl::new();
+        avl.insert(1, "one");
+        avl.insert(3, "three");
+        avl.insert(2, "two"); // Triggers RL rotation
+
+        // Root should be 2 after rotation
+        let root = avl.root.as_ref().unwrap();
+        assert_eq!(root.borrow().key, 2);
+
+        assert_eq!(avl.search(&1), Some("one"));
+        assert_eq!(avl.search(&2), Some("two"));
+        assert_eq!(avl.search(&3), Some("three"));
+    }
+
+    #[test]
+    fn test_sorted_insert_stays_balanced() {
+        let mut avl = Avl::new();
+
+        // Insert 1-10 in order (worst case for BST)
+        for i in 1..=10 {
+            avl.insert(i, i * 10);
+        }
+
+        // Check all values are findable
+        for i in 1..=10 {
+            assert_eq!(avl.search(&i), Some(i * 10));
+        }
+
+        // Height should be log(n), not n
+        // For 10 nodes, height should be ~4, not 10
+        let root = avl.root.as_ref().unwrap();
+        assert!(root.borrow().height <= 5); // Allow some slack
+    }
+
+    #[test]
+    fn test_reverse_sorted_insert_stays_balanced() {
+        let mut avl = Avl::new();
+
+        // Insert 10-1 in reverse order
+        for i in (1..=10).rev() {
+            avl.insert(i, i * 10);
+        }
+
+        for i in 1..=10 {
+            assert_eq!(avl.search(&i), Some(i * 10));
+        }
+
+        let root = avl.root.as_ref().unwrap();
+        assert!(root.borrow().height <= 5);
+    }
+
+    #[test]
+    fn test_delete_leaf() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+        avl.insert(3, "three");
+        avl.insert(7, "seven");
+
+        avl.delete(&3);
+
+        assert_eq!(avl.search(&3), None);
+        assert_eq!(avl.search(&5), Some("five"));
+        assert_eq!(avl.search(&7), Some("seven"));
+    }
+
+    #[test]
+    fn test_delete_node_with_one_child() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+        avl.insert(3, "three");
+        avl.insert(7, "seven");
+        avl.insert(6, "six");
+
+        avl.delete(&7); // 7 has only left child (6)
+
+        assert_eq!(avl.search(&7), None);
+        assert_eq!(avl.search(&6), Some("six"));
+    }
+
+    #[test]
+    fn test_delete_node_with_two_children() {
+        let mut avl = Avl::new();
+        for i in 1..=7 {
+            avl.insert(i, i * 10);
+        }
+
+        avl.delete(&4); // Node with two children
+
+        assert_eq!(avl.search(&4), None);
+        // All other nodes should still exist
+        for i in [1, 2, 3, 5, 6, 7] {
+            assert_eq!(avl.search(&i), Some(i * 10));
+        }
+    }
+
+    #[test]
+    fn test_delete_root() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+        avl.insert(3, "three");
+        avl.insert(7, "seven");
+
+        avl.delete(&5);
+
+        assert_eq!(avl.search(&5), None);
+        assert_eq!(avl.search(&3), Some("three"));
+        assert_eq!(avl.search(&7), Some("seven"));
+    }
+
+    #[test]
+    fn test_delete_all_nodes() {
+        let mut avl = Avl::new();
+        for i in 1..=5 {
+            avl.insert(i, i * 10);
+        }
+
+        for i in 1..=5 {
+            avl.delete(&i);
+        }
+
+        for i in 1..=5 {
+            assert_eq!(avl.search(&i), None);
+        }
+    }
+
+    #[test]
+    fn test_delete_nonexistent() {
+        let mut avl = Avl::new();
+        avl.insert(5, "five");
+
+        avl.delete(&10); // Doesn't exist
+
+        // Tree should be unchanged
+        assert_eq!(avl.search(&5), Some("five"));
+    }
+
+    #[test]
+    fn test_delete_maintains_balance() {
+        let mut avl = Avl::new();
+
+        for i in 1..=10 {
+            avl.insert(i, i * 10);
+        }
+
+        // Delete several nodes
+        avl.delete(&1);
+        avl.delete(&2);
+        avl.delete(&3);
+
+        // Tree should still be balanced
+        let root = avl.root.as_ref().unwrap();
+        let balance = get_balance_from_outside(&root);
+        assert!(balance >= -1 && balance <= 1);
+    }
+
+    #[test]
+    fn test_insert_delete_insert() {
+        let mut avl = Avl::new();
+
+        avl.insert(5, "five");
+        avl.delete(&5);
+        avl.insert(5, "FIVE");
+
+        assert_eq!(avl.search(&5), Some("FIVE"));
+    }
+
+    #[test]
+    fn test_large_tree() {
+        let mut avl = Avl::new();
+
+        // Insert 100 elements
+        for i in 0..100 {
+            avl.insert(i, i * 2);
+        }
+
+        // All should be searchable
+        for i in 0..100 {
+            assert_eq!(avl.search(&i), Some(i * 2));
+        }
+
+        // Height should be ~log2(100) ≈ 7
+        let root = avl.root.as_ref().unwrap();
+        assert!(root.borrow().height <= 10);
+    }
+
+    #[test]
+    fn test_string_keys() {
+        let mut avl = Avl::new();
+
+        avl.insert("dog".to_string(), 1);
+        avl.insert("cat".to_string(), 2);
+        avl.insert("zebra".to_string(), 3);
+        avl.insert("ant".to_string(), 4);
+
+        assert_eq!(avl.search(&"dog".to_string()), Some(1));
+        assert_eq!(avl.search(&"cat".to_string()), Some(2));
+
+        avl.delete(&"cat".to_string());
+        assert_eq!(avl.search(&"cat".to_string()), None);
+    }
+
+    #[test]
+    fn test_random_operations() {
+        let mut avl = Avl::new();
+
+        avl.insert(50, "fifty");
+        avl.insert(25, "twenty-five");
+        avl.delete(&50);
+        avl.insert(75, "seventy-five");
+        avl.insert(10, "ten");
+        avl.delete(&25);
+        avl.insert(30, "thirty");
+
+        assert_eq!(avl.search(&50), None);
+        assert_eq!(avl.search(&25), None);
+        assert_eq!(avl.search(&75), Some("seventy-five"));
+        assert_eq!(avl.search(&10), Some("ten"));
+        assert_eq!(avl.search(&30), Some("thirty"));
+    }
+
+    // Helper function to check balance from outside
+    fn get_balance_from_outside<K: Ord + Clone, V: Clone>(
+        node: &Rc<RefCell<AVLNode<K, V>>>,
+    ) -> i32 {
+        let borrowed = node.borrow();
+        let left_height = borrowed
+            .left
+            .as_ref()
+            .map(|n| n.borrow().height)
+            .unwrap_or(0);
+        let right_height = borrowed
+            .right
+            .as_ref()
+            .map(|n| n.borrow().height)
+            .unwrap_or(0);
+        left_height - right_height
+    }
+}
