@@ -56,6 +56,22 @@ impl<K: Ord + Clone, V: Clone> Avl<K, V> {
         }
     }
 
+    fn find_min(node: &Rc<RefCell<AVLNode<K, V>>>) -> (K, V) {
+        let borrowed = node.borrow();
+        if let Some(ref left) = borrowed.left {
+            return Self::find_min(left);
+        }
+        (borrowed.key.clone(), borrowed.value.clone())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.root.is_none()
+    }
+
+    pub fn contains(&self, key: &K) -> bool {
+        self.search(key).is_some()
+    }
+
     fn get_height(node: &Option<NodeRef<K, V>>) -> i32 {
         match node {
             Some(n) => n.borrow().height,
