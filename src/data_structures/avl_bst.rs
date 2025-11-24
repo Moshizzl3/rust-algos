@@ -4,6 +4,8 @@
 use core::{borrow, fmt};
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
+use crate::data_structures::graphs::Node;
+
 type NodeRef<K, V> = Rc<RefCell<AVLNode<K, V>>>;
 
 #[derive(Debug)]
@@ -22,6 +24,36 @@ pub struct Avl<K, V> {
 impl<K: Ord + Clone, V: Clone> Avl<K, V> {
     pub fn new() -> Self {
         Self { root: None }
+    }
+
+    pub fn search(&self, key: &K) -> Option<V> {
+        if let Some(ref node) = self.root {
+            Self::search_helper(&node, key)
+        } else {
+            None
+        }
+    }
+
+    fn search_helper(node: &NodeRef<K, V>, key: &K) -> Option<V> {
+        let borrowed = node.borrow();
+
+        if *key == borrowed.key {
+            return Some(borrowed.value.clone());
+        }
+
+        if *key < borrowed.key {
+            if let Some(ref left_node) = borrowed.left.clone() {
+                drop(borrowed);
+                Self::search_helper(left_node, key)
+            } else {
+                None
+            }
+        } else if let Some(ref right_node) = borrowed.right.clone() {
+            drop(borrowed);
+            Self::search_helper(right_node, key)
+        } else {
+            None
+        }
     }
 
     fn get_height(node: &Option<NodeRef<K, V>>) -> i32 {

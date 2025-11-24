@@ -22,20 +22,14 @@ use crate::{
 
 fn main() {
     let mut avl = Avl::new();
-    let mut bst = Bst::new();
 
-    println!("Inserting 1, 2, 3, 4, 5, 6, 7...\n");
-
-    for i in 1..=7 {
+    for i in 1..=10 {
         avl.insert(i, i * 10);
     }
-    println!("After inserting avl");
-    println!("{}\n", avl);
 
-    for i in 1..=7 {
-        bst.insert(i, i * 10);
-    }
+    println!("Tree:\n{}\n", avl);
 
-    println!("After inserting bst");
-    println!("{}\n", bst);
+    println!("Search for 5: {:?}", avl.search(&5));
+    println!("Search for 10: {:?}", avl.search(&10));
+    println!("Search for 99: {:?}", avl.search(&99));
 }
