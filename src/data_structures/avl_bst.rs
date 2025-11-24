@@ -56,6 +56,80 @@ impl<K: Ord + Clone, V: Clone> Avl<K, V> {
         }
     }
 
+    pub fn delete(&mut self, key: &K) {
+        if let Some(ref root) = self.root {
+            self.root = Self::delete_helper(root, key)
+        }
+    }
+
+    fn delete_helper(node: &NodeRef<K, V>, key: &K) -> Option<NodeRef<K, V>> {
+        let mut borrowed = node.borrow_mut();
+        if *key < borrowed.key {
+            if let Some(left) = borrowed.left.take() {
+                borrowed.left = Self::delete_helper(&left, key);
+            }
+        } else if *key > borrowed.key {
+            if let Some(right) = borrowed.right.take() {
+                borrowed.right = Self::delete_helper(&right, key);
+            }
+        } else {
+            // If leaf (no children)
+            if borrowed.left.is_none() && borrowed.right.is_none() {
+                return None;
+            }
+            // Parent node has only one child
+            if borrowed.left.is_none() {
+                return borrowed.right.take();
+            }
+            if borrowed.right.is_none() {
+                return borrowed.left.take();
+            }
+            // Parent node has two children
+            // If this panic, something is totally wrong, since have checked for none above
+            let right = borrowed
+                .right
+                .take()
+                .expect("Two children case, right child should exist, should not be None.");
+
+            let (successor_key, successor_value) = Self::find_min(&right);
+            borrowed.key = successor_key;
+            borrowed.value = successor_value;
+            borrowed.right = Self::delete_helper(&right, &borrowed.key); //use successor key here
+        }
+
+        drop(borrowed);
+        Self::update_height(node);
+        let balance_factor = Self::get_balance_factor(node);
+
+        if balance_factor > 1 {
+            let left_node = node
+                .borrow()
+                .left
+                .clone()
+                .expect("Left child must exist, since balance_factor > 1");
+            let left_balance = Self::get_balance_factor(&left_node);
+
+            if left_balance >= 0 {
+                return Some(Self::rotate_right(node));
+            }
+            return Some(Self::rotate_left_right(node));
+        }
+
+        if balance_factor < -1 {
+            let right_node = node
+                .borrow()
+                .right
+                .clone()
+                .expect("Right child must exist since balance_factor < -1");
+            let right_balance = Self::get_balance_factor(&right_node);
+            if right_balance <= 0 {
+                return Some(Self::rotate_left(node));
+            }
+            return Some(Self::rotate_right_left(node));
+        }
+        Some(node.clone())
+    }
+
     fn find_min(node: &Rc<RefCell<AVLNode<K, V>>>) -> (K, V) {
         let borrowed = node.borrow();
         if let Some(ref left) = borrowed.left {
