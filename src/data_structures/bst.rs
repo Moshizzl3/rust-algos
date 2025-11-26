@@ -43,9 +43,9 @@ impl<K: Ord + Clone, V: Clone> Bst<K, V> {
         let borrowed = node.borrow();
 
         if key < borrowed.key {
-            if let Some(ref left_node) = borrowed.left {
-                Self::insert_helper(left_node, key, value);
+            if let Some(ref left_node) = borrowed.left.clone() {
                 drop(borrowed);
+                Self::insert_helper(left_node, key, value);
             } else {
                 drop(borrowed);
                 node.borrow_mut().left = Some(Rc::new(RefCell::new(BSTNode {
@@ -56,9 +56,9 @@ impl<K: Ord + Clone, V: Clone> Bst<K, V> {
                 })));
             }
         } else if key > borrowed.key {
-            if let Some(ref right_node) = borrowed.right {
-                Self::insert_helper(right_node, key, value);
+            if let Some(ref right_node) = borrowed.right.clone() {
                 drop(borrowed);
+                Self::insert_helper(right_node, key, value);
             } else {
                 drop(borrowed);
                 node.borrow_mut().right = Some(Rc::new(RefCell::new(BSTNode {
@@ -155,6 +155,8 @@ impl<K: Ord + Clone, V: Clone> Bst<K, V> {
 
     fn find_min(node: &Rc<RefCell<BSTNode<K, V>>>) -> (K, V) {
         let borrowed = node.borrow();
+
+        // we only go left because left subtrees have min, going right we would find max
         if let Some(ref left) = borrowed.left {
             return Self::find_min(left);
         }

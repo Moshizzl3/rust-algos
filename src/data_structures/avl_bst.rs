@@ -28,7 +28,7 @@ impl<K: Ord + Clone, V: Clone> Avl<K, V> {
 
     pub fn search(&self, key: &K) -> Option<V> {
         if let Some(ref node) = self.root {
-            Self::search_helper(&node, key)
+            Self::search_helper(node, key)
         } else {
             None
         }
