@@ -38,8 +38,54 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
         }
     }
 
- 
+    fn insert_helper(
+        node: &NodeRef<K, V>,
+        key: K,
+        value: V,
+        order: usize,
+    ) -> Option<(K, V, NodeRef<K, V>)> {
+        let mut borrowed = node.borrow_mut();
 
+        match Self::find_key_index(&borrowed.keys, &key) {
+            Ok(idx) => {
+                borrowed.values[idx] = value;
+                None
+            }
+            Err(idx) => {
+                if borrowed.is_leaf() {
+                    borrowed.keys.insert(idx, key.clone());
+                    borrowed.values.insert(idx, value.clone());
+
+                    if borrowed.keys.len() >= order {
+                        return Some(Self::split_node(node));
+                    }
+                    None
+                } else {
+                    let children = borrowed.children.as_ref().unwrap();
+                    let child = children[idx].clone();
+                    drop(borrowed);
+
+                    if let Some((promoted_key, promoted_value, ref new_child)) =
+                        Self::insert_helper(&child, key, value, order)
+                    {
+                        let mut borrowed = node.borrow_mut();
+                        borrowed.keys.insert(idx, promoted_key.clone());
+                        borrowed.values.insert(idx, promoted_value.clone());
+                        let children = borrowed.children.as_mut().unwrap();
+                        children.insert(idx + 1, new_child.clone());
+
+                        if borrowed.keys.len() >= order {
+                            return Some(Self::split_node(node));
+                        }
+
+                        None // no splitting is needed
+                    } else {
+                        None
+                    }
+                }
+            }
+        }
+    }
 
     fn split_node(node: &NodeRef<K, V>) -> (K, V, NodeRef<K, V>) {
         let mut borrowed = node.borrow_mut();
