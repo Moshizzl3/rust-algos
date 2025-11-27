@@ -7,6 +7,7 @@ use std::{cell::RefCell, collections::VecDeque, fs::read_dir, rc::Rc};
 
 use crate::algoritms::compression::huffman::decode;
 use crate::data_structures::avl_bst::Avl;
+use crate::data_structures::b_tree::{BTree, BTreeNode};
 use crate::data_structures::bst::Bst;
 // use crate::data_structures::hash_tables::MoMap;
 use crate::{
@@ -21,15 +22,18 @@ use crate::{
 };
 
 fn main() {
-    let mut avl = Avl::new();
+    let mut tree = BTree::new(5);
 
-    for i in 1..=10 {
-        avl.insert(i, i * 10);
-    }
+    //just a test
+    let root = Rc::new(RefCell::new(BTreeNode {
+        keys: vec![10, 20, 30],
+        values: vec!["ten", "twenty", "thirty"],
+        children: None,
+    }));
 
-    println!("Tree:\n{}\n", avl);
+    tree.root = Some(root);
 
-    println!("Search for 5: {:?}", avl.search(&5));
-    println!("Search for 10: {:?}", avl.search(&10));
-    println!("Search for 99: {:?}", avl.search(&99));
+    println!("Search for 20: {:?}", tree.search(&20));
+    println!("Search for 10: {:?}", tree.search(&10));
+    println!("Search for 99: {:?}", tree.search(&99));
 }
