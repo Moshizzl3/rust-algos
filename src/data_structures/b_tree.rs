@@ -1,6 +1,6 @@
 // B tree 🐝 (specialized m-way tree)
 
-use core::borrow;
+use std::fmt::{self, Display};
 use std::{cell::RefCell, rc::Rc};
 
 type NodeRef<K, V> = Rc<RefCell<BTreeNode<K, V>>>;
@@ -79,6 +79,7 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
                     borrowed.values.insert(idx, value.clone());
 
                     if borrowed.keys.len() >= order {
+                        drop(borrowed);
                         return Some(Self::split_node(node));
                     }
                     None
@@ -97,6 +98,7 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
                         children.insert(idx + 1, new_child.clone());
 
                         if borrowed.keys.len() >= order {
+                            drop(borrowed);
                             return Some(Self::split_node(node));
                         }
 
@@ -163,5 +165,55 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
         // important read docs to understand what it does, basically return index if found,
         // or the index where the key would go if not found
         keys.binary_search(key)
+    }
+}
+
+impl<K: Ord + Display + Clone + fmt::Debug, V: Display + Clone> BTree<K, V> {
+    fn display_helper(
+        node: &NodeRef<K, V>,
+        f: &mut fmt::Formatter<'_>,
+        prefix: &str,
+        child_prefix: &str,
+        is_root: bool,
+    ) -> fmt::Result {
+        let borrowed = node.borrow();
+
+        // Display all keys in this node
+        if is_root {
+            writeln!(f, "{:?}", borrowed.keys)?; // Show all keys in node
+        } else {
+            writeln!(f, "{}{:?}", prefix, borrowed.keys)?;
+        }
+
+        // Display children if they exist
+        if let Some(ref children) = borrowed.children {
+            let len = children.len();
+            for (i, child) in children.iter().enumerate() {
+                let is_last = i == len - 1;
+                let new_prefix = if is_last {
+                    format!("{}└── ", child_prefix)
+                } else {
+                    format!("{}├── ", child_prefix)
+                };
+                let new_child_prefix = if is_last {
+                    format!("{}    ", child_prefix)
+                } else {
+                    format!("{}│   ", child_prefix)
+                };
+                Self::display_helper(child, f, &new_prefix, &new_child_prefix, false)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl<K: Display + Ord + Clone + fmt::Debug, V: Display + Clone> Display for BTree<K, V> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(ref root) = self.root {
+            Self::display_helper(root, f, "", "", true)
+        } else {
+            write!(f, "Empty tree")
+        }
     }
 }
