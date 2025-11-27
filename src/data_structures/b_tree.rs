@@ -38,6 +38,28 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
         }
     }
 
+    pub fn insert(&mut self, key: K, value: V) {
+        if let Some(ref root) = self.root {
+            if let Some((median_key, median_value, right_node)) =
+                Self::insert_helper(root, key, value, self.order)
+            {
+                // root split happening
+                let new_root = Rc::new(RefCell::new(BTreeNode {
+                    keys: vec![median_key],
+                    values: vec![median_value],
+                    children: Some(vec![root.clone(), right_node]),
+                }));
+                self.root = Some(new_root)
+            }
+        } else {
+            self.root = Some(Rc::new(RefCell::new(BTreeNode {
+                keys: vec![key],
+                values: vec![value],
+                children: None,
+            })));
+        }
+    }
+
     fn insert_helper(
         node: &NodeRef<K, V>,
         key: K,
