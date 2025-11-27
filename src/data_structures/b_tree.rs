@@ -28,4 +28,15 @@ impl<K: Ord + Clone, V: Clone> BTree<K, V> {
         assert!(order >= 3, "B-tree order must be at least 3");
         Self { root: None, order }
     }
+
+    fn search_helper(node: &NodeRef<K, V>, key: &K) {}
+
+    fn find_key_index(keys: &[K], key: &K) -> Result<usize, usize> {
+        // we assume keys are sorted.
+        debug_assert!(
+            keys.is_sorted(),
+            "Keys must be sorted, something is wrong with insert."
+        );
+        keys.binary_search(key)
+    }
 }
